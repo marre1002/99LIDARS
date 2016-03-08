@@ -1,0 +1,7 @@
+#!/bin/sh
+
+BUILD_PTH='./TestPipeline/build/'
+
+git pull;
+
+cd $BUILD_PTH && cmake .. && make
