@@ -90,6 +90,8 @@ main (int argc, char** argv)
   ec.setInputCloud (cloud_filtered);
   ec.extract (cluster_indices);
 
+  // some comment
+
   // ----------------------------------------------------------------------------------------------------------
   // -----Open 3D viewer and add point cloud-----
   //boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
