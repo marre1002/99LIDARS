@@ -9,5 +9,4 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 add_executable (thread_filter ThreadTestFilter.cpp)
-target_link_libraries (tfilter ${PCL_LIBRARIES})
-
+target_link_libraries (thread_filter ${PCL_LIBRARIES})

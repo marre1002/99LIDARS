@@ -8,6 +8,6 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable (tfilter ThreadTestFilter.cpp)
-target_link_libraries (tfilter ${PCL_LIBRARIES})
+add_executable (thread_filter ThreadTestFilter.cpp)
+target_link_libraries (thread_filter ${PCL_LIBRARIES})
 
