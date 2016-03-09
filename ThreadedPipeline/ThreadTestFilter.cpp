@@ -143,7 +143,7 @@ int main(int argc, char const *argv[])
     //Read point cloud from file
 
     std::cerr << "Loding pcd-file to memory\n", tt.tic ();
-    if (pcl::io::loadPCDFile<pcl::PointXYZ> ("data.pcd", *cloud) == -1) //* load the file
+    if (pcl::io::loadPCDFile<pcl::PointXYZ> ("data00.pcd", *cloud) == -1) //* load the file
   	{
     	PCL_ERROR ("Couldn't read file data.pcd\n");
     	return (-1);
