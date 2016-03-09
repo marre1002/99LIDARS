@@ -58,6 +58,7 @@ void *planar_segmentation(void *threadarg)
 	pcl::console::TicToc tt;
 	tt.tic();
 
+	int i;
 	struct region_limits limits;
 	struct thread_data *my_data;
     
@@ -68,6 +69,7 @@ void *planar_segmentation(void *threadarg)
     
 //	std::cout << "my_data->cloud: " << my_data->cloud->points.size () << " data points.\n" << std::endl;
 
+    for (i = 0; i < 30; ++i){
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filt (new pcl::PointCloud<pcl::PointXYZ>);
 
 	pcl::PassThrough<pcl::PointXYZ> passx;
@@ -87,7 +89,7 @@ void *planar_segmentation(void *threadarg)
 	passy.filter (*cloud_filt);
 
 
-    std::cout << my_data->thread_id << ": " << cloud_filt->points.size () << " data points.\n" << std::endl;
+    //std::cout << my_data->thread_id << ": " << cloud_filt->points.size () << " data points." << std::endl;
 	
 
 	// Create the segmentation object for the planar model and set all the parameter
@@ -111,8 +113,11 @@ void *planar_segmentation(void *threadarg)
 	extract.setIndices (inliers);
 	extract.setNegative (false);
 
+
 	// Get the points associated with the planar surface
 	extract.filter (*cloud_filt);
+
+	}
 	//std::cout << "PointCloud representing the planar component: " << my_data->cloud->points.size () << " data points." << std::endl;
     std::cout << "Thread: " << my_data->thread_id << "  time:" << tt.toc() << "ms\n";
     pthread_exit(NULL);
