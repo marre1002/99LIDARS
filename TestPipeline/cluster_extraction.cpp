@@ -27,7 +27,7 @@ main (int argc, char** argv)
   // Timer object
   pcl::console::TicToc tt;
 
-  std::cerr << "Starting VoxelGrid downsampling",tt.tic ();
+  std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
   // Create the filtering object: downsample the dataset using a leaf size of 1cm
   pcl::VoxelGrid<pcl::PointXYZ> vg;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
@@ -110,7 +110,7 @@ main (int argc, char** argv)
     cloud_cluster->height = 1;
     cloud_cluster->is_dense = true;
 
-    pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
+    /*pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
     feature_extractor.setInputCloud (cloud_cluster);
     feature_extractor.compute ();
 
@@ -140,7 +140,7 @@ main (int argc, char** argv)
     //std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
     //std::stringstream ss;
     //ss << "cloud_cluster_" << j << ".pcd";
-    //writer.write<pcl::PointXYZ> (ss.str (), *cloud_cluster, false); //*
+    //writer.write<pcl::PointXYZ> (ss.str (), *cloud_cluster, false); /*/
     j++;
   }
 

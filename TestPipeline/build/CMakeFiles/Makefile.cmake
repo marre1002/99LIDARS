@@ -25,6 +25,7 @@ SET(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-2.8/Modules/CMakeImportBuildSettings.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeParseArguments.cmake"
   "/usr/share/cmake-2.8/Modules/CMakeSystemSpecificInformation.cmake"
+  "/usr/share/cmake-2.8/Modules/CMakeUnixFindMake.cmake"
   "/usr/share/cmake-2.8/Modules/Compiler/GNU-C.cmake"
   "/usr/share/cmake-2.8/Modules/Compiler/GNU-CXX.cmake"
   "/usr/share/cmake-2.8/Modules/Compiler/GNU.cmake"
