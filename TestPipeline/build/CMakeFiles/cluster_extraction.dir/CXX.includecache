@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/martin/99LIDARS/TestPipeline/cluster_extraction.cpp
+/home/lucas/Desktop/99LIDARS/TestPipeline/cluster_extraction.cpp
 pcl/ModelCoefficients.h
 -
 pcl/point_types.h
@@ -30,6 +30,8 @@ pcl/segmentation/sac_segmentation.h
 pcl/segmentation/extract_clusters.h
 -
 pcl/console/time.h
+-
+pcl/filters/passthrough.h
 -
 pcl/visualization/cloud_viewer.h
 -
@@ -1554,12 +1556,24 @@ pcl/pcl_macros.h
 pcl/filters/filter_indices.h
 -
 
+/usr/include/pcl-1.7/pcl/filters/impl/passthrough.hpp
+pcl/filters/passthrough.h
+-
+pcl/common/io.h
+-
+
 /usr/include/pcl-1.7/pcl/filters/impl/voxel_grid.hpp
 pcl/common/common.h
 -
 pcl/common/io.h
 -
 pcl/filters/voxel_grid.h
+-
+
+/usr/include/pcl-1.7/pcl/filters/passthrough.h
+pcl/filters/filter_indices.h
+-
+pcl/filters/impl/passthrough.hpp
 -
 
 /usr/include/pcl-1.7/pcl/filters/voxel_grid.h

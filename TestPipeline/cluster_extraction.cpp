@@ -10,6 +10,7 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/console/time.h>
+#include <pcl/filters/passthrough.h>
 
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
@@ -27,11 +28,28 @@ main (int argc, char** argv)
   // Timer object
   pcl::console::TicToc tt;
 
-  std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
-  // Create the filtering object: downsample the dataset using a leaf size of 1cm
-  pcl::VoxelGrid<pcl::PointXYZ> vg;
+  // Create the pass through filtering object
+  // COMMENT BELOW SEGMENT TO REMOVE PASSTHROUGH FILTERING
+  std::cerr << "Running passthrough downsampling\n", tt.tic();
+  pcl::PassThrough<pcl::PointXYZ> pass;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-  vg.setInputCloud (cloud);
+  pass.setInputCloud (cloud);
+  pass.setFilterFieldName ("x");
+  pass.setFilterLimits (-100, 0);
+  //pass.setFilterLimitsNegative (true);
+  pass.filter (*cloud_filtered);
+  pass.setInputCloud(cloud_filtered);
+  pass.setFilterFieldName("y");
+  pass.setFilterLimits(-100, 0);
+  pass.filter(*cloud_filtered);
+  std::cerr << ">> Done: " << tt.toc () << " ms\n";
+  //COMMENT ABOVE SEGMENT TO REMOVE PASSTHROUGH FILTERING
+
+  std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
+  // Create the filtering object: downsample the dataset using a leaf size of 7cm
+  pcl::VoxelGrid<pcl::PointXYZ> vg;
+  //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+  vg.setInputCloud (cloud_filtered);
   vg.setLeafSize (0.07f, 0.07f, 0.07f);
   vg.filter (*cloud_filtered);
   std::cerr << ">> Done: " << tt.toc () << " ms\n";
@@ -88,17 +106,20 @@ main (int argc, char** argv)
   ec.setInputCloud (cloud_filtered);
   ec.extract (cluster_indices);
 
-  // some comment
+  // COMMENT 3DVIEWER BEFORE PUSHING TO ODROID
 
   // ----------------------------------------------------------------------------------------------------------
   // -----Open 3D viewer and add point cloud-----
-  //boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-  //viewer->setBackgroundColor (0, 0, 0);
-  //viewer->addPointCloud<pcl::PointXYZ> (cloud_filtered, "Cloud with boxes");
-  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
-  //viewer->addCoordinateSystem (1.0);
-  //viewer->initCameraParameters ();
+  /*
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  viewer->setBackgroundColor (0, 0, 0);
+  viewer->addPointCloud<pcl::PointXYZ> (cloud_filtered, "Cloud with boxes");
+  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
+  viewer->addCoordinateSystem (1.0);
+  viewer->initCameraParameters ();
   //------------------------------------------------------------------------------------------------------------
+  */
+  // COMMENT 3DVIEWER ABOVE BEFORE PUSHING TO ODROIDS
 
   int j = 1;
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
@@ -110,6 +131,7 @@ main (int argc, char** argv)
     cloud_cluster->height = 1;
     cloud_cluster->is_dense = true;
 
+    //UNCOMMENT TO ADD WHITEBOXES
     /*pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
     feature_extractor.setInputCloud (cloud_cluster);
     feature_extractor.compute ();
@@ -147,12 +169,15 @@ main (int argc, char** argv)
   std::cerr << ">> Done: " << tt.toc () << " ms\n";
 
   std::cout << "found: " << j << " clusters." << endl;
+  
+  //COMMENT THIS WHEN RUNNING ON ODROID TO REMOVE 3DVIEWER
   /*
   while (!viewer->wasStopped ())
   {
     viewer->spinOnce (100);
     boost::this_thread::sleep (boost::posix_time::microseconds (100000));
   }
+  //COMMENT THIS ABOVE WHEN RUNNING ON ODROID TO REMOVE 3DVIEWER
   */
   return (0);
 }
