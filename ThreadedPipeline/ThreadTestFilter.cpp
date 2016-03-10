@@ -20,6 +20,8 @@
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 #include <pcl/visualization/cloud_viewer.h>
 
+#include <pcl/filters/voxel_grid.h>
+
 
 /*------------------------------------------------------------
 	x = 0,0 is placement of the car and LIDAR-sensor
@@ -134,9 +136,18 @@ void *planar_segmentation(void *threadarg)
 		passy.filter (*cloud_filt);
 	}
 
-
-    std::cout << my_data->thread_id << ": " << cloud_filt->points.size () << " data points." << std::endl;
 	
+   	// If pointcloud is like.. huge, voxelgrid it before ransac
+
+   	if(cloud_filt->points.size() > 20000){
+   		// Create the filtering object: downsample the dataset using a leaf size of 1cm
+  		pcl::VoxelGrid<pcl::PointXYZ> vg;
+  		vg.setInputCloud (cloud_filt);
+  		vg.setLeafSize (0.1f, 0.1f, 0.1f);
+  		vg.filter (*cloud_filt);
+   	}
+   	std::cout << my_data->thread_id << ": " << cloud_filt->points.size () << " data points." << std::endl;
+
 
 	// Create the segmentation object for the planar model and set all the parameter
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
