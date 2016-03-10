@@ -41,6 +41,8 @@ pcl/segmentation/extract_polygonal_prism_data.h
 -
 pcl/visualization/cloud_viewer.h
 -
+pcl/filters/voxel_grid.h
+-
 
 /usr/include/eigen3/Eigen/Cholesky
 Core
@@ -1620,10 +1622,28 @@ pcl/filters/passthrough.h
 pcl/common/io.h
 -
 
+/usr/include/pcl-1.7/pcl/filters/impl/voxel_grid.hpp
+pcl/common/common.h
+-
+pcl/common/io.h
+-
+pcl/filters/voxel_grid.h
+-
+
 /usr/include/pcl-1.7/pcl/filters/passthrough.h
 pcl/filters/filter_indices.h
 -
 pcl/filters/impl/passthrough.hpp
+-
+
+/usr/include/pcl-1.7/pcl/filters/voxel_grid.h
+pcl/filters/boost.h
+-
+pcl/filters/filter.h
+-
+map
+-
+pcl/filters/impl/voxel_grid.hpp
 -
 
 /usr/include/pcl-1.7/pcl/for_each_type.h
