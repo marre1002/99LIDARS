@@ -11,19 +11,39 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/console/time.h>
 #include <pcl/filters/passthrough.h>
+#include <string>
+#include <sstream>
 
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
 
+//Value to string converter
+template <typename T>
+std::string to_string(T value)
+{
+  std::ostringstream os;
+  os << value;
+  return os.str();
+}
+
 int 
 main (int argc, char** argv)
 {
+
   // Read in the cloud data
   pcl::PCDReader reader;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>), cloud_f (new pcl::PointCloud<pcl::PointXYZI>);
   reader.read ("data00.pcd", *cloud);
   std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
+
+  for(int i=0; i < 4; i++){
+    std::string str = to_string(i);
+    std::cout << str << std::endl;
+    
+  }
+
+  reader.read("data00.pcd", *cloud);
 
   // Timer object
   pcl::console::TicToc tt;
