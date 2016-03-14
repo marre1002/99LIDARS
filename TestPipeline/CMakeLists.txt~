@@ -8,8 +8,8 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-include_directories(${include})
-link_directories(${include})
+include_directories(${YOUR_DIRECTORY})
+set(HEADER_FILES ${YOUR_DIRECTORY}util.h)
 
-add_executable (cluster_extraction cluster_extraction.cpp include/util.h)
+add_executable (cluster_extraction cluster_extraction.cpp ${HEADER_FILES})
 target_link_libraries (cluster_extraction ${PCL_LIBRARIES})

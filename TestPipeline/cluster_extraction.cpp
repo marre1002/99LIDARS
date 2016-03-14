@@ -11,6 +11,7 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/console/time.h>
 #include <pcl/filters/passthrough.h>
+#include "include/util.h"
 #include <string>
 #include <sstream>
 
@@ -19,13 +20,7 @@
 #include <vector>
 
 //Value to string converter
-template <typename T>
-std::string to_string(T value)
-{
-  std::ostringstream os;
-  os << value;
-  return os.str();
-}
+
 
 int 
 main (int argc, char** argv)
