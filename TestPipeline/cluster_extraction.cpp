@@ -28,7 +28,7 @@ main (int argc, char** argv)
   // Read in the cloud data
   pcl::PCDReader reader;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>), cloud_f (new pcl::PointCloud<pcl::PointXYZI>);
-  
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZI>);
   // Timer object
   pcl::console::TicToc tt;
   pcl::console::TicToc pT;
@@ -43,26 +43,25 @@ main (int argc, char** argv)
     
     // Create the pass through filtering object
     // COMMENT BELOW SEGMENT TO REMOVE PASSTHROUGH FILTERING
-    std::cout << str << " :Running passthrough downsampling\n", tt.tic();
-    pcl::PassThrough<pcl::PointXYZI> pass;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZI>);
-    pass.setInputCloud (cloud);
-    pass.setFilterFieldName ("x");
-    pass.setFilterLimits (-100, 0);
+    //std::cout << str << " :Running passthrough downsampling\n", tt.tic();
+    //pcl::PassThrough<pcl::PointXYZI> pass;
+    //pass.setInputCloud (cloud);
+    //pass.setFilterFieldName ("x");
+    //pass.setFilterLimits (-100, 0);
     //pass.setFilterLimitsNegative (true);
-    pass.filter (*cloud_filtered);
-    pass.setInputCloud(cloud_filtered);
-    pass.setFilterFieldName("y");
-    pass.setFilterLimits(-100, 0);
-    pass.filter(*cloud_filtered);
-    std::cout << str << " >> Done: " << tt.toc () << " ms\n";
+    //pass.filter (*cloud_filtered);
+    //pass.setInputCloud(cloud_filtered);
+    //pass.setFilterFieldName("y");
+    //pass.setFilterLimits(-100, 0);
+    //pass.filter(*cloud_filtered);
+    //std::cout << str << " >> Done: " << tt.toc () << " ms\n";
     //COMMENT ABOVE SEGMENT TO REMOVE PASSTHROUGH FILTERING
 
     std::cout << str << " :Starting VoxelGrid downsampling\n",tt.tic ();
     // Create the filtering object: downsample the dataset using a leaf size of 7cm
     pcl::VoxelGrid<pcl::PointXYZI> vg;
     //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-    vg.setInputCloud (cloud_filtered);
+    vg.setInputCloud (cloud);
     vg.setLeafSize (0.07f, 0.07f, 0.07f);
     vg.filter (*cloud_filtered);
     std::cout << str << " >> Done: " << tt.toc () << " ms\n";
