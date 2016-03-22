@@ -11,13 +11,9 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/console/time.h>
 #include <pcl/filters/passthrough.h>
-<<<<<<< HEAD
-#include <string>
-=======
 #include "include/util.h"
 #include <string>
 #include <sstream>
->>>>>>> 7675a631730c3f69fae22f9d2df7b4060bc47f22
 
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
@@ -41,7 +37,7 @@ main (int argc, char** argv)
   for(int i=0; i < 5; i++){
     pT.tic();
 
-    std::string str = std::string("data0") + to_string(i) + ".pcd";
+    std::string str = std::string("../../PCDdataFiles/data0") + to_string(i) + ".pcd";
     reader.read(str, *cloud);
     std::cout << str << " :PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl;
     
@@ -183,60 +179,7 @@ main (int argc, char** argv)
   
   // COMMENT 3DVIEWER ABOVE BEFORE PUSHING TO ODROIDS
 
-<<<<<<< HEAD
-  int j = 1;
-  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-  {
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZI>);
-    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-      cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-    cloud_cluster->width = cloud_cluster->points.size ();
-    cloud_cluster->height = 1;
-    cloud_cluster->is_dense = true;
-
-    //UNCOMMENT TO ADD WHITEBOXES
-    /*pcl::MomentOfInertiaEstimation <pcl::PointXYZI> feature_extractor;
-    feature_extractor.setInputCloud (cloud_cluster);
-    feature_extractor.compute ();
-
-    std::vector <float> moment_of_inertia;
-    std::vector <float> eccentricity;
-    pcl::PointXYZ min_point_OBB;
-    pcl::PointXYZ max_point_OBB;
-    pcl::PointXYZ position_OBB;
-    Eigen::Matrix3f rotational_matrix_OBB;
-    float major_value, middle_value, minor_value;
-    Eigen::Vector3f major_vector, middle_vector, minor_vector;
-    Eigen::Vector3f mass_center;
-
-    feature_extractor.getMomentOfInertia (moment_of_inertia);
-    feature_extractor.getEccentricity (eccentricity);
-    feature_extractor.getOBB (min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
-    feature_extractor.getEigenValues (major_value, middle_value, minor_value);
-    feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
-    feature_extractor.getMassCenter (mass_center);
-
-    Eigen::Vector3f position (position_OBB.x, position_OBB.y, position_OBB.z);
-    Eigen::Quaternionf quat (rotational_matrix_OBB);
-    //viewer->addCube (position, quat, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, ("id" + j));
-    //viewer->addText3D ("Yoda" +j, position_OBB, 1.0, 1.0, 1.0,1.0, "id" + j ,0);
-    //viewer->addText3D ("ID:"+j, position_OBB, 1.0, 1.0, 1.0, 1.0);
-    
-    //std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
-    //std::stringstream ss;
-    //ss << "cloud_cluster_" << j << ".pcd";
-    //writer.write<pcl::PointXYZI> (ss.str (), *cloud_cluster, false); /*/
-    j++;
-  }
-
-  std::string pi = "pi is " + std::to_string(3.1415926);
-
-  std::cerr << ">> Done: " << tt.toc () << " ms\n";
-
-  std::cout << "found: " << j << " clusters." << endl;
-=======
   std::cerr << ">> All files done: " << pT.toc () << " ms\n";
->>>>>>> 7675a631730c3f69fae22f9d2df7b4060bc47f22
   
   //COMMENT THIS WHEN RUNNING ON ODROID TO REMOVE 3DVIEWER
   
