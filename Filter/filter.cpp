@@ -22,16 +22,73 @@ main (int argc, char** argv)
 {
   // Read in the cloud data
   pcl::PCDReader reader;
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>), cloud_f (new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
   reader.read ("data00.pcd", *cloud);
   std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
 
   // Timer object
   pcl::console::TicToc tt;
 
+  tt.tic();
+
+  pcl::PointCloud<pcl::PointXYZ> cloud0;
+  pcl::PointCloud<pcl::PointXYZ> cloud1;
+  pcl::PointCloud<pcl::PointXYZ> cloud2;
+  pcl::PointCloud<pcl::PointXYZ> cloud3;
+  pcl::PointCloud<pcl::PointXYZ> cloud4;
+  pcl::PointCloud<pcl::PointXYZ> cloud5;
+  pcl::PointCloud<pcl::PointXYZ> cloud6;
+  pcl::PointCloud<pcl::PointXYZ> cloud7;
+
+  double zero = 0.0000000;
+  for (int iii = 0; iii < static_cast<int> (cloud->size ()); ++iii){ 
+      if(cloud->points[iii].x > zero){
+          if(cloud->points[iii].y > zero){
+              if(cloud->points[iii].y > cloud->points[iii].x){
+                  cloud0.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+              }else{
+                  cloud1.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+              }
+          }else{
+              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
+                  cloud2.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+              }else{
+                  cloud3.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+              }
+          }    
+      }else{
+          if(cloud->points[iii].y > zero){
+              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
+                      cloud4.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                  }else{
+                      cloud5.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                  }
+              }else{
+                  if(cloud->points[iii].y > cloud->points[iii].x){
+                      cloud6.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                  }else{
+                      cloud7.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                  }
+          }
+      }
+  }
+
+  //pcl::io::savePCDFileASCII ("cloud3.pcd", cloud3);
+
+  /*std::cout << "1st sector points: " << one << endl;
+  std::cout << "2st sector points: " << two << endl;
+  std::cout << "3st sector points: " << three << endl;
+  std::cout << "4st sector points: " << four << endl;
+  std::cout << "5st sector points: " << five << endl;
+  std::cout << "6st sector points: " << six << endl;
+  std::cout << "7st sector points: " << seven << endl;
+  std::cout << "8st sector points: " << eight << endl;*/
+  
+  std::cout << "Splitting data in: " << tt.toc() << " ms." << endl;
+
   // Create the pass through filtering object
   // COMMENT BELOW SEGMENT TO REMOVE PASSTHROUGH FILTERING
-  std::cerr << "Running passthrough downsampling\n", tt.tic();
+  /*std::cerr << "Running passthrough downsampling\n", tt.tic();
   pcl::PassThrough<pcl::PointXYZI> pass;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZI>);
   pass.setInputCloud (cloud);
@@ -107,19 +164,25 @@ main (int argc, char** argv)
   ec.setInputCloud (cloud_filtered);
   ec.extract (cluster_indices);
 
+  */
   // COMMENT 3DVIEWER BEFORE PUSHING TO ODROID
 
   // ----------------------------------------------------------------------------------------------------------
   // -----Open 3D viewer and add point cloud-----
   
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-  viewer->setBackgroundColor (0, 0, 0);
-  viewer->addPointCloud<pcl::PointXYZI> (cloud_filtered, "Cloud with boxes");
-  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
-  viewer->addCoordinateSystem (1.0);
-  viewer->initCameraParameters ();
+
+  //boost::shared_ptr<pcl::PointCloud<pcl::PointXYZx>> cloud_test; 
+  //cloud_test = boost::make_shared <pcl::PointCloud<pcl::PointXYZx>> (new pcl::PointCloud<pcl::PointXYZx>);
+
+
+  //boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  //viewer->setBackgroundColor (0, 0, 0);
+  ///viewer->addPointCloud<pcl::PointXYZ> (cloud3, "Cloud with boxes");
+  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
+  //viewer->addCoordinateSystem (1.0);
+  //viewer->initCameraParameters ();
   //------------------------------------------------------------------------------------------------------------
-  
+  /*
   // COMMENT 3DVIEWER ABOVE BEFORE PUSHING TO ODROIDS
 
   int j = 1;
@@ -163,24 +226,21 @@ main (int argc, char** argv)
     //std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
     //std::stringstream ss;
     //ss << "cloud_cluster_" << j << ".pcd";
-    //writer.write<pcl::PointXYZI> (ss.str (), *cloud_cluster, false); /*/
+    //writer.write<pcl::PointXYZI> (ss.str (), *cloud_cluster, false); /
     j++;
   }
 
-  std::string pi = "pi is " + std::to_string(3.1415926);
-
-  std::cerr << ">> Done: " << tt.toc () << " ms\n";
-
-  std::cout << "found: " << j << " clusters." << endl;
-  
+  */
   //COMMENT THIS WHEN RUNNING ON ODROID TO REMOVE 3DVIEWER
   
-  while (!viewer->wasStopped ())
-  {
-    viewer->spinOnce (100);
-    boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-  }
+  //while (!viewer->wasStopped ())
+  //{
+  //  viewer->spinOnce (100);
+  //  boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+  //}
   //COMMENT THIS ABOVE WHEN RUNNING ON ODROID TO REMOVE 3DVIEWER
-  
+
+    
+
   return (0);
 }

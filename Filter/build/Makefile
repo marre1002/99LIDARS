@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/martin/99LIDARS/TestPipeline
+CMAKE_SOURCE_DIR = /home/martin/99LIDARS/Filter
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/martin/99LIDARS/TestPipeline/build
+CMAKE_BINARY_DIR = /home/martin/99LIDARS/Filter/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -69,9 +69,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/99LIDARS/TestPipeline/build/CMakeFiles /home/martin/99LIDARS/TestPipeline/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/99LIDARS/Filter/build/CMakeFiles /home/martin/99LIDARS/Filter/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/99LIDARS/TestPipeline/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/martin/99LIDARS/Filter/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -99,41 +99,41 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named cluster_extraction
+# Target rules for targets named filter
 
 # Build rule for target.
-cluster_extraction: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 cluster_extraction
-.PHONY : cluster_extraction
+filter: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 filter
+.PHONY : filter
 
 # fast build rule for target.
-cluster_extraction/fast:
-	$(MAKE) -f CMakeFiles/cluster_extraction.dir/build.make CMakeFiles/cluster_extraction.dir/build
-.PHONY : cluster_extraction/fast
+filter/fast:
+	$(MAKE) -f CMakeFiles/filter.dir/build.make CMakeFiles/filter.dir/build
+.PHONY : filter/fast
 
-cluster_extraction.o: cluster_extraction.cpp.o
-.PHONY : cluster_extraction.o
+filter.o: filter.cpp.o
+.PHONY : filter.o
 
 # target to build an object file
-cluster_extraction.cpp.o:
-	$(MAKE) -f CMakeFiles/cluster_extraction.dir/build.make CMakeFiles/cluster_extraction.dir/cluster_extraction.cpp.o
-.PHONY : cluster_extraction.cpp.o
+filter.cpp.o:
+	$(MAKE) -f CMakeFiles/filter.dir/build.make CMakeFiles/filter.dir/filter.cpp.o
+.PHONY : filter.cpp.o
 
-cluster_extraction.i: cluster_extraction.cpp.i
-.PHONY : cluster_extraction.i
+filter.i: filter.cpp.i
+.PHONY : filter.i
 
 # target to preprocess a source file
-cluster_extraction.cpp.i:
-	$(MAKE) -f CMakeFiles/cluster_extraction.dir/build.make CMakeFiles/cluster_extraction.dir/cluster_extraction.cpp.i
-.PHONY : cluster_extraction.cpp.i
+filter.cpp.i:
+	$(MAKE) -f CMakeFiles/filter.dir/build.make CMakeFiles/filter.dir/filter.cpp.i
+.PHONY : filter.cpp.i
 
-cluster_extraction.s: cluster_extraction.cpp.s
-.PHONY : cluster_extraction.s
+filter.s: filter.cpp.s
+.PHONY : filter.s
 
 # target to generate assembly for a file
-cluster_extraction.cpp.s:
-	$(MAKE) -f CMakeFiles/cluster_extraction.dir/build.make CMakeFiles/cluster_extraction.dir/cluster_extraction.cpp.s
-.PHONY : cluster_extraction.cpp.s
+filter.cpp.s:
+	$(MAKE) -f CMakeFiles/filter.dir/build.make CMakeFiles/filter.dir/filter.cpp.s
+.PHONY : filter.cpp.s
 
 # Help Target
 help:
@@ -141,12 +141,12 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... cluster_extraction"
 	@echo "... edit_cache"
+	@echo "... filter"
 	@echo "... rebuild_cache"
-	@echo "... cluster_extraction.o"
-	@echo "... cluster_extraction.i"
-	@echo "... cluster_extraction.s"
+	@echo "... filter.o"
+	@echo "... filter.i"
+	@echo "... filter.s"
 .PHONY : help
 
 
