@@ -33,13 +33,28 @@ pcl/console/time.h
 -
 pcl/filters/passthrough.h
 -
+<<<<<<< HEAD
 string
 -
+=======
+include/util.h
+/home/lucas/Desktop/99LIDARS/TestPipeline/include/util.h
+string
+-
+sstream
+-
+>>>>>>> 7675a631730c3f69fae22f9d2df7b4060bc47f22
 pcl/visualization/cloud_viewer.h
 -
 pcl/features/moment_of_inertia_estimation.h
 -
 vector
+-
+
+/home/lucas/Desktop/99LIDARS/TestPipeline/include/util.h
+string
+-
+sstream
 -
 
 /usr/include/eigen3/Eigen/Cholesky
