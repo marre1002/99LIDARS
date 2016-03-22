@@ -23,7 +23,7 @@ main (int argc, char** argv)
   // Read in the cloud data
   pcl::PCDReader reader;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-  reader.read ("data00.pcd", *cloud);
+  reader.read ("../../PCDdataFiles/data00.pcd", *cloud);
   std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
 
   // Timer object
@@ -102,7 +102,6 @@ main (int argc, char** argv)
   pass.filter(*cloud_filtered);
   std::cerr << ">> Done: " << tt.toc () << " ms\n";
   //COMMENT ABOVE SEGMENT TO REMOVE PASSTHROUGH FILTERING
-
   std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
   // Create the filtering object: downsample the dataset using a leaf size of 7cm
   pcl::VoxelGrid<pcl::PointXYZI> vg;
@@ -112,7 +111,6 @@ main (int argc, char** argv)
   vg.filter (*cloud_filtered);
   std::cerr << ">> Done: " << tt.toc () << " ms\n";
   std::cout << "PointCloud after filtering has: " << cloud_filtered->points.size ()  << " data points." << std::endl; //*
-
   // Create the segmentation object for the planar model and set all the parameters
   std::cerr << "Starting Planar Segmentation",tt.tic ();
   pcl::SACSegmentation<pcl::PointXYZI> seg;
@@ -126,35 +124,28 @@ main (int argc, char** argv)
   seg.setMaxIterations (100);
   seg.setDistanceThreshold (0.2);
   seg.setInputCloud (cloud_filtered);
-
  
   // Segment the largest planar component from the remaining cloud
   seg.setInputCloud (cloud_filtered);
   seg.segment (*inliers, *coefficients);
-
   // Extract the planar inliers from the input cloud
   pcl::ExtractIndices<pcl::PointXYZI> extract;
   extract.setInputCloud (cloud_filtered);
   extract.setIndices (inliers);
   extract.setNegative (false);
-
   // Get the points associated with the planar surface
   extract.filter (*cloud_plane);
   std::cout << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
-
   // Remove the planar inliers, extract the rest
   extract.setNegative (true);
   extract.filter (*cloud_f);
   *cloud_filtered = *cloud_f;
   std::cerr << ">> Done: " << tt.toc () << " ms\n";
-
   
-
   std::cerr << "Building kdTree and finding all clusters (Euclidian cluster extraction)\n",tt.tic ();
   // Creating the KdTree object for the search method of the extraction
   pcl::search::KdTree<pcl::PointXYZI>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZI>);
   tree->setInputCloud (cloud_filtered);
-
   std::vector<pcl::PointIndices> cluster_indices;
   pcl::EuclideanClusterExtraction<pcl::PointXYZI> ec;
   ec.setClusterTolerance (0.25); // 0.02 = 2cm
@@ -163,7 +154,6 @@ main (int argc, char** argv)
   ec.setSearchMethod (tree);
   ec.setInputCloud (cloud_filtered);
   ec.extract (cluster_indices);
-
   */
   // COMMENT 3DVIEWER BEFORE PUSHING TO ODROID
 
@@ -184,7 +174,6 @@ main (int argc, char** argv)
   //------------------------------------------------------------------------------------------------------------
   /*
   // COMMENT 3DVIEWER ABOVE BEFORE PUSHING TO ODROIDS
-
   int j = 1;
   for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
   {
@@ -194,12 +183,10 @@ main (int argc, char** argv)
     cloud_cluster->width = cloud_cluster->points.size ();
     cloud_cluster->height = 1;
     cloud_cluster->is_dense = true;
-
     //UNCOMMENT TO ADD WHITEBOXES
     /*pcl::MomentOfInertiaEstimation <pcl::PointXYZI> feature_extractor;
     feature_extractor.setInputCloud (cloud_cluster);
     feature_extractor.compute ();
-
     std::vector <float> moment_of_inertia;
     std::vector <float> eccentricity;
     pcl::PointXYZ min_point_OBB;
@@ -209,14 +196,12 @@ main (int argc, char** argv)
     float major_value, middle_value, minor_value;
     Eigen::Vector3f major_vector, middle_vector, minor_vector;
     Eigen::Vector3f mass_center;
-
     feature_extractor.getMomentOfInertia (moment_of_inertia);
     feature_extractor.getEccentricity (eccentricity);
     feature_extractor.getOBB (min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
     feature_extractor.getEigenValues (major_value, middle_value, minor_value);
     feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
     feature_extractor.getMassCenter (mass_center);
-
     Eigen::Vector3f position (position_OBB.x, position_OBB.y, position_OBB.z);
     Eigen::Quaternionf quat (rotational_matrix_OBB);
     //viewer->addCube (position, quat, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, ("id" + j));
@@ -229,7 +214,6 @@ main (int argc, char** argv)
     //writer.write<pcl::PointXYZI> (ss.str (), *cloud_cluster, false); /
     j++;
   }
-
   */
   //COMMENT THIS WHEN RUNNING ON ODROID TO REMOVE 3DVIEWER
   
