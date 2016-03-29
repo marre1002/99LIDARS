@@ -13,6 +13,7 @@
 #include <pcl/filters/passthrough.h>
 #include "include/util.h"
 #include <string>
+#include <omp.h>
 
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
@@ -58,33 +59,62 @@ main (int argc, char** argv)
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud7 (new pcl::PointCloud<pcl::PointXYZ>);
 
     double zero = 0.0000000;
-    for (int iii = 0; iii < static_cast<int> (cloud->size ()); ++iii){ 
+    int iii;
+
+    omp_lock_t sector0, sector1, sector2, sector3, sector4, sector5, sector6, sector7;
+    omp_init_lock(&sector0);
+    omp_init_lock(&sector1);
+    omp_init_lock(&sector2);
+    omp_init_lock(&sector3);
+    omp_init_lock(&sector4);
+    omp_init_lock(&sector5);
+    omp_init_lock(&sector6);
+    omp_init_lock(&sector7);
+
+    #pragma omp parallel for
+    for (iii = 0; iii < static_cast<int> (cloud->size ()); ++iii){ 
         if(cloud->points[iii].x > zero){
             if(cloud->points[iii].y > zero){
                 if(cloud->points[iii].y > cloud->points[iii].x){
+                    omp_set_lock(&sector0);
                     cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                    omp_unset_lock(&sector0);
                 }else{
+                    omp_set_lock(&sector1);
                     cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                    omp_unset_lock(&sector1);
                 }
             }else{
                 if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
+                    omp_set_lock(&sector2);
                     cloud2->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                    omp_unset_lock(&sector2);
                 }else{
+                    omp_set_lock(&sector3);
                     cloud3->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                    omp_unset_lock(&sector3);
                 }
             }    
         }else{
             if(cloud->points[iii].y > zero){
                 if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
+                        omp_set_lock(&sector4);
                         cloud4->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                        omp_unset_lock(&sector4);
                     }else{
+                        omp_set_lock(&sector5);
                         cloud5->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                        omp_unset_lock(&sector5);
                     }
                 }else{
                     if(cloud->points[iii].y > cloud->points[iii].x){
+                        omp_set_lock(&sector6);
                         cloud6->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                        omp_unset_lock(&sector6);
                     }else{
+                        omp_set_lock(&sector7);
                         cloud7->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                        omp_unset_lock(&sector7);
                     }
             }
         }
