@@ -29,6 +29,7 @@ main (int argc, char** argv)
 
   // Timer object
   pcl::console::TicToc tt;
+  pcl::console::TicToc to;
 
   tt.tic();
 
@@ -76,28 +77,28 @@ main (int argc, char** argv)
 
   //pcl::io::savePCDFileASCII ("cloud3.pcd", cloud3);
 
-  /*std::cout << "1st sector points: " << one << endl;
-  std::cout << "2st sector points: " << two << endl;
-  std::cout << "3st sector points: " << three << endl;
-  std::cout << "4st sector points: " << four << endl;
-  std::cout << "5st sector points: " << five << endl;
-  std::cout << "6st sector points: " << six << endl;
-  std::cout << "7st sector points: " << seven << endl;
-  std::cout << "8st sector points: " << eight << endl;*/
+  //std::cout << "1st sector points: " << one << endl;
+  std::cout << "2st sector points: " << cloud1->points.size() << endl;
+  //std::cout << "3st sector points: " << three << endl;
+  //std::cout << "4st sector points: " << four << endl;
+  //std::cout << "5st sector points: " << five << endl;
+  //std::cout << "6st sector points: " << six << endl;
+  //std::cout << "7st sector points: " << seven << endl;
+  //std::cout << "8st sector points: " << eight << endl;
   
   std::cout << "Splitting data in: " << tt.toc() << " ms." << endl;
 
   // Create the pass through filtering object
   // COMMENT BELOW SEGMENT TO REMOVE PASSTHROUGH FILTERING
-  
-  /*std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
+  to.tic();
+  std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
   // Create the filtering object: downsample the dataset using a leaf size of 7cm
   pcl::VoxelGrid<pcl::PointXYZ> vg;
   vg.setInputCloud (cloud1);
   vg.setLeafSize (0.07f, 0.07f, 0.07f);
   vg.filter (*cloud1);
-  std::cerr << ">> Done: " << tt.toc () << " ms\n";
-  std::cout << "PointCloud after filtering has: " << cloud0->points.size ()  << " data points." << std::endl; */
+  std::cerr << ">> Voxelgrid Done: " << tt.toc () << " ms\n";
+  std::cout << "PointCloud after filtering has: " << cloud1->points.size ()  << " data points." << std::endl;
   // Create the segmentation object for the planar model and set all the parameters
   std::cerr << "Starting Planar Segmentation",tt.tic ();
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
@@ -111,11 +112,11 @@ main (int argc, char** argv)
   seg.setMethodType (pcl::SAC_RANSAC);
   seg.setMaxIterations (100);
   seg.setDistanceThreshold (0.2);
-  seg.setInputCloud (cloud2);
+  seg.setInputCloud (cloud1);
   seg.segment (*inliers, *coefficients);
   // Extract the planar inliers from the input cloud
   pcl::ExtractIndices<pcl::PointXYZ> extract;
-  extract.setInputCloud (cloud2);
+  extract.setInputCloud (cloud1);
   extract.setIndices (inliers);
   extract.setNegative (false);
   // Get the points associated with the planar surface
@@ -125,7 +126,7 @@ main (int argc, char** argv)
   extract.setNegative (true);
   extract.filter (*cloud_f);
   *cloud_filtered = *cloud_f;
-  std::cerr << ">> Done: " << tt.toc () << " ms\n";
+  std::cerr << ">>Planar segmentation Done: " << tt.toc () << " ms\n";
   
   std::cerr << "Building kdTree and finding all clusters (Euclidian cluster extraction)\n",tt.tic ();
   // Creating the KdTree object for the search method of the extraction
@@ -195,7 +196,8 @@ main (int argc, char** argv)
   }
 
   std::cout << "found: " << j << " clusters." << endl;
-  std::cerr << ">> Done: " << tt.toc () << " ms\n";
+  std::cerr << ">>Clustering Done: " << tt.toc () << " ms\n";
+  std::cout << "Pipeline execution ms: " << to.toc() << "\n";
 
 
   /*while (!viewer->wasStopped ())
