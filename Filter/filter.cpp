@@ -34,9 +34,10 @@ main (int argc, char** argv)
   tt.tic();
 
 
-  pcl::PointCloud<pcl::PointXYZ> cloud1;
+  
+  //pcl::PointCloud<pcl::PointXYZ> cloud1;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 (new pcl::PointCloud<pcl::PointXYZ>);
-  //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud3 (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud4 (new pcl::PointCloud<pcl::PointXYZ>);
@@ -51,7 +52,7 @@ main (int argc, char** argv)
               if(cloud->points[iii].y > cloud->points[iii].x){
                   cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
               }else{
-                  cloud1.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+                  cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
               }
           }else{
               if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
@@ -77,7 +78,7 @@ main (int argc, char** argv)
       }
   }
 
-  pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
+  //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
 
   //std::cout << "1st sector points: " << one << endl;
   std::cout << "2st sector points: " << cloud1->points.size() << endl;
