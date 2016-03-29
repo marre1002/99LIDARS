@@ -8,5 +8,8 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable (filter filter.cpp)
+include_directories(${include})
+link_directories(${include})
+
+add_executable (filter filter.cpp include/util.h)
 target_link_libraries (filter ${PCL_LIBRARIES})
