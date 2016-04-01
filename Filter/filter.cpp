@@ -135,6 +135,7 @@ int main (int argc, char** argv)
 	  //vg.filter (*cloud_voxel);
 	  //std::cerr << ">> Done: " << tt.toc () << " ms\n";
 	  //std::cout << "PointCloud after filtering has: " << cloud0->points.size ()  << " data points." << std::endl; 
+	  
 	  // Create the segmentation object for the planar model and set all the parameters
 	  std::cerr << "Starting Planar Segmentation",tt.tic ();
 
