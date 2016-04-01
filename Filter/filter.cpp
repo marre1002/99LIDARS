@@ -155,7 +155,7 @@ int main (int argc, char** argv)
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
 	  pcl::ExtractIndices<pcl::PointXYZ> extract;
-	  extract.setInputCloud (v.at(ii));
+	  extract.setInputCloud (cloud_voxel);
 	  extract.setIndices (inliers);
 	  extract.setNegative (false);
 	  // Get the points associated with the planar surface
