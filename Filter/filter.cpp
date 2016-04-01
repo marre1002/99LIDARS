@@ -151,7 +151,7 @@ int main (int argc, char** argv)
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
 	  seg.setDistanceThreshold (0.30);
-	  seg.setInputCloud (v.at(ii));
+	  seg.setInputCloud (cloud_voxel);
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
 	  pcl::ExtractIndices<pcl::PointXYZ> extract;
