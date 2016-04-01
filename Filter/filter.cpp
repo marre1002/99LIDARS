@@ -70,48 +70,50 @@ int main (int argc, char** argv)
 
   double zero = 0.0000000;
   for (int iii = 0; iii < static_cast<int> (cloud->size ()); ++iii){ 
-      if(cloud->points[iii].x > zero){
-          if(cloud->points[iii].y > zero){
-              if(cloud->points[iii].y > cloud->points[iii].x){
-                  cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-              }else{
-                  cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-              }
-          }else{
-              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
-                  cloud2->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-              }else{
-                  cloud3->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-              }
-          }    
+      if((iii%2) == 0)
+      {
+
       }else{
-          if(cloud->points[iii].y > zero){
-              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
-                      cloud4->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-                  }else{
-                      cloud5->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-                  }
-              }else{
-                  if(cloud->points[iii].y > cloud->points[iii].x){
-                      cloud6->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-                  }else{
-                      cloud7->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-                  }
-          }
-      }
+	      if(cloud->points[iii].x > zero){
+	          if(cloud->points[iii].y > zero){
+	              if(cloud->points[iii].y > cloud->points[iii].x){
+	                  cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	              }else{
+	                  cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	              }
+	          }else{
+	              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
+	                  cloud2->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	              }else{
+	                  cloud3->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	              }
+	          }    
+	      }else{
+	          if(cloud->points[iii].y > zero){
+	              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
+	                      cloud4->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                  }else{
+	                      cloud5->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                  }
+	              }else{
+	                  if(cloud->points[iii].y > cloud->points[iii].x){
+	                      cloud6->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                  }else{
+	                      cloud7->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                  }
+	          }
+	      }
+  		}
   }
 
   //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
 
-  /*std::cout << "1st sector points: " << one << endl;
-  std::cout << "2st sector points: " << two << endl;
-  std::cout << "3st sector points: " << three << endl;
-  std::cout << "4st sector points: " << four << endl;
-  std::cout << "5st sector points: " << five << endl;
-  std::cout << "6st sector points: " << six << endl;
-  std::cout << "7st sector points: " << seven << endl;
-  std::cout << "8st sector points: " << eight << endl;*/
-
+  int total_points = 0;
+  for(int k = 0 ; k < v.size(); k++){
+  	total_points += v.at(k)->points.size();
+  	std::cout << "Sector " << k <<  " have: " << v.at(k)->points.size() << " points" << endl;	
+  }
+  std::cout << "All sectors:" << total_points << " points" << endl;
 
   
   std::cout << "Splitting data in: " << tt.toc() << " ms." << endl;
@@ -127,10 +129,10 @@ int main (int argc, char** argv)
   
 	  //std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
 	  // Create the filtering object: downsample the dataset using a leaf size of 7cm
-	  pcl::VoxelGrid<pcl::PointXYZ> vg;
-	  vg.setInputCloud (v.at(ii));
-	  vg.setLeafSize (0.07f, 0.07f, 0.07f);
-	  vg.filter (*cloud_voxel);
+	  //pcl::VoxelGrid<pcl::PointXYZ> vg;
+	  //vg.setInputCloud (v.at(ii));
+	  //vg.setLeafSize (0.07f, 0.07f, 0.07f);
+	  //vg.filter (*cloud_voxel);
 	  //std::cerr << ">> Done: " << tt.toc () << " ms\n";
 	  //std::cout << "PointCloud after filtering has: " << cloud0->points.size ()  << " data points." << std::endl; 
 	  // Create the segmentation object for the planar model and set all the parameters
@@ -151,11 +153,11 @@ int main (int argc, char** argv)
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
 	  seg.setDistanceThreshold (0.30);
-	  seg.setInputCloud (cloud_voxel);
+	  seg.setInputCloud (v.at(ii));
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
 	  pcl::ExtractIndices<pcl::PointXYZ> extract;
-	  extract.setInputCloud (cloud_voxel);
+	  extract.setInputCloud (v.at(ii));
 	  extract.setIndices (inliers);
 	  extract.setNegative (false);
 	  // Get the points associated with the planar surface
