@@ -68,13 +68,12 @@ int main (int argc, char** argv)
   v.push_back(cloud6);
   v.push_back(cloud7);
 
+  // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
+  int nth_point = 3;
   double zero = 0.0000000;
   for (int iii = 0; iii < static_cast<int> (cloud->size ()); ++iii){ 
-      if((iii%2) == 0)
-      {
-
-      }else{
-	      if(cloud->points[iii].x > zero){
+    if((iii%nth_point) == 0){
+    	if(cloud->points[iii].x > zero){
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > cloud->points[iii].x){
 	                  cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
@@ -103,7 +102,9 @@ int main (int argc, char** argv)
 	                  }
 	          }
 	      }
-  		}
+    }else{
+    	//Ignore this point
+    }
   }
 
   //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
@@ -178,9 +179,9 @@ int main (int argc, char** argv)
 	  tree->setInputCloud (cloud_filtered);
 	  std::vector<pcl::PointIndices> cluster_indices;
 	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	  ec.setClusterTolerance (0.40); // 0.02 = 2cm
-	  ec.setMinClusterSize (50);
-	  ec.setMaxClusterSize (6000); // with voxel it should be aroud 5000
+	  ec.setClusterTolerance (0.50); // 0.02 = 2cm
+	  ec.setMinClusterSize (30);
+	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
 	  ec.setSearchMethod (tree);
 	  ec.setInputCloud (cloud_filtered);
 	  ec.extract (cluster_indices);
