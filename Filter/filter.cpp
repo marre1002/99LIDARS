@@ -125,13 +125,13 @@ int main (int argc, char** argv)
 
   for(int ii = 0 ; ii < v.size(); ii++){
   
-	  //std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
+	  std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
 	  // Create the filtering object: downsample the dataset using a leaf size of 7cm
 	  pcl::VoxelGrid<pcl::PointXYZ> vg;
 	  vg.setInputCloud (v.at(ii));
 	  vg.setLeafSize (0.07f, 0.07f, 0.07f);
 	  vg.filter (*cloud_voxel);
-	  //std::cerr << ">> Done: " << tt.toc () << " ms\n";
+	  std::cerr << ">>Voxelgrid Done: " << tt.toc () << " ms\n";
 	  //std::cout << "PointCloud after filtering has: " << cloud0->points.size ()  << " data points." << std::endl; 
 	  // Create the segmentation object for the planar model and set all the parameters
 	  std::cerr << "Starting Planar Segmentation",tt.tic ();
