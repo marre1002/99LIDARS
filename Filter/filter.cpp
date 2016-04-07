@@ -43,6 +43,7 @@ int main (int argc, char** argv)
   // Timer object
   pcl::console::TicToc tt;
 
+
   tt.tic();
 
 
@@ -138,7 +139,7 @@ int main (int argc, char** argv)
 	  //std::cout << "PointCloud after filtering has: " << cloud0->points.size ()  << " data points." << std::endl; 
 	  
 	  // Create the segmentation object for the planar model and set all the parameters
-	  std::cerr << "Starting Planar Segmentation",tt.tic ();
+	  std::cerr << "Starting Planar Segmentation\n",tt.tic ();
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
 
@@ -148,7 +149,7 @@ int main (int argc, char** argv)
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
 	  pcl::PCDWriter writer;
-	  seg.setEpsAngle(  30.0f * (M_PI/180.0f) );
+	  seg.setEpsAngle( 30.0f * (M_PI/180.0f) );
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
@@ -169,7 +170,7 @@ int main (int argc, char** argv)
 	  extract.setNegative (true);
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
-	  std::cerr << ">> Done: " << tt.toc () << " ms\n";
+	  std::cerr << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
 
 	 
 	  
@@ -232,7 +233,7 @@ int main (int argc, char** argv)
 	  }
 
 	  std::cout << "found: " << j << " clusters." << endl;
-	  std::cerr << ">> Done: " << tt.toc () << " ms\n";
+	  std::cerr << ">> Clustering Done: " << tt.toc () << " ms\n";
 
 	  cloud_filtered->points.clear();
 	  cloud_f->points.clear();
