@@ -35,10 +35,10 @@ static int numprocs;
 int main(int argc, char **argv) {
 int my_rank = 0;
 // MPI initializations
-//MPI_Status status;
-//MPI_Init (&argc, &argv);
-//MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
-//MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
+MPI_Status status;
+MPI_Init (&argc, &argv);
+MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
+MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
 
 //************************************************************************************************************
 
@@ -47,14 +47,6 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
   // Timer object
   pcl::console::TicToc tt;
-  
-  //pcl::PCDReader reader;
-  //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-  //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
-  //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_main (new pcl::PointCloud<pcl::PointXYZ>);
-
-  //reader.read ("../../PCDdataFiles/data02.pcd", *cloud);
-  //std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
 
     tt.tic();
 
@@ -68,7 +60,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	}
 	input.seekg(0, ios::beg);
 
-	pcl::PointCloud<PointXYZ>::Ptr points (new pcl::PointCloud<PointXYZ>);
+	pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
 
 	float ignore;
 	int i;
@@ -76,55 +68,11 @@ if(my_rank == 0){ // I'm master and handle the splitting
 		PointXYZ point;
 		input.read((char *) &point.x, 3*sizeof(float));
 		input.read((char *) &ignore, sizeof(float));
-		points->push_back(point);
+		if(i%3 == 0)cloud->push_back(point);
 	}
 	input.close();
 
-	cout << "Read KTTI point cloud with " << i << " points in " << tt.toc() << " ms." << endl;
-
-  /*float buffer [500000];
-  
-  std::ifstream infile("../../PCDdataFiles/data02.pcd");
-  std::string line;
-  int points = 0;
-  int count = -1;
-  float x, y, z, i;
-  while (std::getline(infile, line)){
-	    std::istringstream iss(line);
-	    
-	    if ((iss >> x >> y >> z >> i)) { 
-	    	buffer[++count];
-	    	buffer[++count];
-	    	buffer[++count];
-	    }
-	    // process pair (a,b)
-	}
-	count++;
-
-	cout << "done reading the file, points: " << count << " in " << tt.toc() << " ms." << endl;	
-/*
-
-for(std::string line; std::getline(source, line); )   //read stream line by line
-{
-    std::istringstream in(line);      //make a stream for the line itself
-
-    std::string type;
-    in >> type;                  //and read the first whitespace-separated token
-
-    if(type == "triangle")       //and check its value
-    {
-        float x, y, z;
-        in >> x >> y >> z;       //now read the whitespace-separated floats
-    }
-    else if(...)
-        ...
-    else
-        ...
-}
-*/
-
-
-  //pcl::PointCloud<pcl::PointXYZ> cloud_yo;
+	cout << "Read KTTI point cloud with " << (i/3) << " points in " << tt.toc() << " ms." << endl;
 
 
   tt.tic();
@@ -139,11 +87,9 @@ for(std::string line; std::getline(source, line); )   //read stream line by line
   float gg [20000];
   float hh [20000];
   int count0,count1,count2,count3,count4,count5,count6,count7 = -1;
-/*
-  int nth_point = 3;
+  
   double zero = 0.0000000;
-  for (int iii = 0; iii < 10; ++iii){ 
-    if((iii%nth_point) == 0){
+  for (int iii = 0; iii < static_cast<int> (cloud->size()); ++iii){ 
     	if(cloud->points[iii].x > zero){
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > cloud->points[iii].x){
@@ -189,9 +135,7 @@ for(std::string line; std::getline(source, line); )   //read stream line by line
 	                }
 	          }
 	      }
-    }else{
-    	//Ignore this point
-    }
+   
   }
 
    count0++; // This is needed because of the 0-index array
@@ -203,7 +147,7 @@ for(std::string line; std::getline(source, line); )   //read stream line by line
    // Send the float buffer (first sector)
    MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 
-   cout << "Sending data in: " << tt.toc() << " ms" << endl; */
+   cout << "Sending data in: " << tt.toc() << " ms" << endl; 
    
 
 }else if(my_rank == 1){ // Worker1 runs this code
@@ -236,6 +180,6 @@ for(std::string line; std::getline(source, line); )   //read stream line by line
 //*****************************************************************************************************************
 
 // End MPI
-//MPI_Finalize ();
+MPI_Finalize ();
 return 0;
 }
