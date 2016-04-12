@@ -89,7 +89,6 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	              	  // Send this point to worker one
 	              	  float buff [3] = {cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z};
 	              	  MPI_Send(&buff, 3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	              	  cout << "Just sent values!" ;
 	              }else{
 	                  cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	              }
