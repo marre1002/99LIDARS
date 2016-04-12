@@ -157,13 +157,26 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	int count;
 
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+	//pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
  	float buff [20000];
  
     MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
  	MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+ 	pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
+
+ 	int i;
+	for(i=0; i < count ; i=i+3) {
+		PointXYZ point;
+		point.x = buff[i];
+		point.y = buff[i+1];
+		point.z = buff[i+2];
+		cloud->push_back(point);
+	}
+
+
 
  	
  	//cloud->points.push_back(pcl::PointXYZ (buff[0], buff[1], buff[2]));
