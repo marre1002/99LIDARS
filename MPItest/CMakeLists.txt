@@ -1,0 +1,5 @@
+PROJECT(test)
+ADD_EXECUTABLE(test mpi_test.cpp)
+SET(CMAKE_C_COMPILER mpicc)
+SET(CMAKE_CXX_COMPILER mpicxx)
+target_link_libraries(test mpi) 
