@@ -54,39 +54,18 @@ if(my_rank == 0){ // I'm master and handle the splitting
   pcl::PointCloud<pcl::PointXYZ> cloud_yo;
 
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud3 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud4 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud5 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud6 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud7 (new pcl::PointCloud<pcl::PointXYZ>);
-
-  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr > v;
-  v.push_back(cloud0);
-  v.push_back(cloud1);
-  v.push_back(cloud2);
-  v.push_back(cloud3);
-  v.push_back(cloud4);
-  v.push_back(cloud5);
-  v.push_back(cloud6);
-  v.push_back(cloud7);
-
-  // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
-
   tt.tic();
 
   int m_tag = 0; // MPI message tag
-  float buff0 [20000];
-  float buff1 [20000];
-  float buff2 [20000];
-  float buff3 [20000];
-  float buff4 [20000];
-  float buff5 [20000];
-  float buff6 [20000];
-  float buff7 [20000];
-  short count0,count1,count2,count3,count4,count5,count6,count7 = -1;
+  float aa [20000];
+  float bb [20000];
+  float cc [20000];
+  float dd [20000];
+  float ee [20000];
+  float ff [20000];
+  float gg [20000];
+  float hh [20000];
+  int count0,count1,count2,count3,count4,count5,count6,count7 = -1;
 
   int nth_point = 3;
   double zero = 0.0000000;
@@ -95,45 +74,45 @@ if(my_rank == 0){ // I'm master and handle the splitting
     	if(cloud->points[iii].x > zero){
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > cloud->points[iii].x){
-	              	  buff0[++count0] = cloud->points[iii].x;
-	              	  buff0[++count0] = cloud->points[iii].y;
-	              	  buff0[++count0] = cloud->points[iii].z;
+	              	  aa[++count0] = cloud->points[iii].x;
+	              	  aa[++count0] = cloud->points[iii].y;
+	              	  aa[++count0] = cloud->points[iii].z;
 	              }else{
-	                  buff1[++count1] = cloud->points[iii].x;
-	              	  buff1[++count1] = cloud->points[iii].y;
-	              	  buff1[++count1] = cloud->points[iii].z;
+	                  bb[++count1] = cloud->points[iii].x;
+	              	  bb[++count1] = cloud->points[iii].y;
+	              	  bb[++count1] = cloud->points[iii].z;
 	              }
 	          }else{
 	              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
-	                  buff2[++count2] = cloud->points[iii].x;
-	              	  buff2[++count2] = cloud->points[iii].y;
-	              	  buff2[++count2] = cloud->points[iii].z;
+	                  cc[++count2] = cloud->points[iii].x;
+	              	  cc[++count2] = cloud->points[iii].y;
+	              	  cc[++count2] = cloud->points[iii].z;
 	              }else{
-	                  buff4[++count3] = cloud->points[iii].x;
-	              	  buff4[++count3] = cloud->points[iii].y;
-	              	  buff4[++count3] = cloud->points[iii].z;
+	                  dd[++count3] = cloud->points[iii].x;
+	              	  dd[++count3] = cloud->points[iii].y;
+	              	  dd[++count3] = cloud->points[iii].z;
 	              }
 	          }    
 	      }else{
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
-	              	  buff4[++count4] = cloud->points[iii].x;
-	              	  buff4[++count4] = cloud->points[iii].y;
-	              	  buff4[++count4] = cloud->points[iii].z;
+	              	  ee[++count4] = cloud->points[iii].x;
+	              	  ee[++count4] = cloud->points[iii].y;
+	              	  ee[++count4] = cloud->points[iii].z;
 	               }else{
-	                  buff5[++count5] = cloud->points[iii].x;
-	              	  buff5[++count5] = cloud->points[iii].y;
-	              	  buff5[++count5] = cloud->points[iii].z;
+	                  ff[++count5] = cloud->points[iii].x;
+	              	  ff[++count5] = cloud->points[iii].y;
+	              	  ff[++count5] = cloud->points[iii].z;
 	               }
 	           }else{
 	               if(cloud->points[iii].y > cloud->points[iii].x){
-	                  buff6[++count6] = cloud->points[iii].x;
-	              	  buff6[++count6] = cloud->points[iii].y;
-	              	  buff6[++count6] = cloud->points[iii].z;
+	                  gg[++count6] = cloud->points[iii].x;
+	              	  gg[++count6] = cloud->points[iii].y;
+	              	  gg[++count6] = cloud->points[iii].z;
 	                }else{
-	                  buff7[++count7] = cloud->points[iii].x;
-	              	  buff7[++count7] = cloud->points[iii].y;
-	              	  buff7[++count7] = cloud->points[iii].z;
+	                  hh[++count7] = cloud->points[iii].x;
+	              	  hh[++count7] = cloud->points[iii].y;
+	              	  hh[++count7] = cloud->points[iii].z;
 	                }
 	          }
 	      }
@@ -149,7 +128,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
    // Send the number of floats to send
    MPI_Send(&count0, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
    // Send the float buffer (first sector)
-   MPI_Send(&buff0, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+   MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 
    cout << "Sending data in: " << tt.toc() << " ms" << endl;
    
