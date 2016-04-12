@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-
-project(mpi)
+project(my_mpi)
 
 find_package(PCL 1.2 REQUIRED)
 
@@ -8,9 +7,11 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-find_package(MPI REQUIRED) #This page is required!
-include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+include_directories(${include})
+link_directories(${include})
 
-add_executable (mpi mpi_test.cpp)
-target_link_libraries (mpi ${PCL_LIBRARIES})
-target_link_libraries (mpi ${MPI_C_LIBRARIES})
+add_executable(my_mpi mpi_test.cpp)
+SET(CMAKE_C_COMPILER mpicc)
+SET(CMAKE_CXX_COMPILER mpicxx)
+target_link_libraries(my_mpi mpi)
+target_link_libraries (my_mpi ${PCL_LIBRARIES})
