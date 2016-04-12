@@ -38,7 +38,6 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
   // Timer object
   pcl::console::TicToc tt;
-  tt.tic();
   
   pcl::PCDReader reader;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -76,6 +75,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
   // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
 
+  tt.tic();
   
   int m_tag = 0; // MPI message tag
   float buff [3];
