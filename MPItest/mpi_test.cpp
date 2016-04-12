@@ -77,6 +77,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
   // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
 
   int m_tag = 0; // MPI message tag
+  float buff [3];
 
   int nth_point = 3;
   double zero = 0.0000000;
@@ -87,7 +88,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	              if(cloud->points[iii].y > cloud->points[iii].x){
 	                  //cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	              	  // Send this point to worker one
-	              	  float buff [3] = {cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z};
+	              	  buff[0] = cloud->points[iii].x; buff[1] = cloud->points[iii].y;buff[2] = cloud->points[iii].z;
 	              	  MPI_Send(&buff, 3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 	              }else{
 	                  cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
@@ -119,12 +120,27 @@ if(my_rank == 0){ // I'm master and handle the splitting
     }
   }
 
+  // Looping is done
+   buff[0] = 0;
+   buff[1] = 0;
+   MPI_Send(&buff, 3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+
 }else if(my_rank == 1){ // Worker1 runs this code
 
- 	 float buff [3];
- 	 MPI_Recv(&buff, 3, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
- 	 cout << "received x:" << buff[0] << " y:" << buff[1] << "z:" << buff[2] << endl;
+ 	float buff [3];
+ 	
+ 	while(true){
+ 		MPI_Recv(&buff, 3, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+ 		if(buff[0] == 0 && buff[1] == 0)
+ 			break;
+ 		else
+ 			cloud->points.push_back(pcl::PointXYZ (buff[0], buff[1], buff[2]));
+ 	}
+
+
+ 	cout << "Received: " << cloud->points.size() << " points." << endl;
 }
 
 
