@@ -76,9 +76,10 @@ if(my_rank == 0){ // I'm master and handle the splitting
   // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
 
   tt.tic();
-  
+
   int m_tag = 0; // MPI message tag
-  float buff [3];
+  float buff [20000];
+  short count = -1;
 
   int nth_point = 3;
   double zero = 0.0000000;
@@ -89,8 +90,11 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	              if(cloud->points[iii].y > cloud->points[iii].x){
 	                  //cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	              	  // Send this point to worker one
-	              	  buff[0] = cloud->points[iii].x; buff[1] = cloud->points[iii].y;buff[2] = cloud->points[iii].z;
-	              	  MPI_Send(&buff, 3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	              	  buff[++count] = cloud->points[iii].x;
+	              	  buff[++count] = cloud->points[iii].y;
+	              	  buff[++count] = cloud->points[iii].z;
+	              	  //buff[0] = cloud->points[iii].x; buff[1] = cloud->points[iii].y;buff[2] = cloud->points[iii].z;
+	              	  //MPI_Send(&buff, 3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 	              }else{
 	                  cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	              }
@@ -121,31 +125,35 @@ if(my_rank == 0){ // I'm master and handle the splitting
     }
   }
 
-  // Looping is done
-   buff[0] = 0;
-   buff[1] = 0;
-   MPI_Send(&buff, 3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-
    cout << "Splitting data in: " << tt.toc() << " ms" << endl;
+   tt.tic();
+   // Send the number of floats to send
+   MPI_Send(&count, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+   // Send the float buffer (first sector)
+   MPI_Send(&buff, count, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+
+   cout << "Sending data in: " << tt.toc() << " ms" << endl;
+   
 
 }else if(my_rank == 1){ // Worker1 runs this code
 
 	pcl::console::TicToc tt;
 	tt.tic();
 
+	int count;
+
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
- 	float buff [3];
- 	
- 	while(true){
- 		MPI_Recv(&buff, 3, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
- 		if(buff[0] == 0 && buff[1] == 0)
- 			break;
- 		else
- 			cloud->points.push_back(pcl::PointXYZ (buff[0], buff[1], buff[2]));
- 	}
+ 	float buff [20000];
+ 
+    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
+ 	MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
+ 	//cloud->points.push_back(pcl::PointXYZ (buff[0], buff[1], buff[2]));
+
+ 	cout << "------------ worker1 -------------------" << endl;
+	cout << "Count is: " << count  << "count/3 = " << (count/3) << endl;
  	cout << "Received: " << cloud->points.size() << " points." << endl;
  	cout << "Time elapsed: " << tt.toc() << "ms" << endl;
 }
