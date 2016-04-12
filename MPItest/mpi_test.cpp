@@ -36,6 +36,9 @@ MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
 
 if(my_rank == 0){ // I'm master and handle the splitting
 
+  // Timer object
+  pcl::console::TicToc tt;
+  tt.tic();
   
   pcl::PCDReader reader;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -45,11 +48,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
   reader.read ("../../PCDdataFiles/data02.pcd", *cloud);
   std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
 
-  // Timer object
-  //pcl::console::TicToc tt;
 
 
-  //tt.tic();
 
 
   pcl::PointCloud<pcl::PointXYZ> cloud_yo;
@@ -76,6 +76,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
   // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
 
+  
   int m_tag = 0; // MPI message tag
   float buff [3];
 
@@ -125,7 +126,12 @@ if(my_rank == 0){ // I'm master and handle the splitting
    buff[1] = 0;
    MPI_Send(&buff, 3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 
+   cout << "Splitting data in: " << tt.toc() << " ms" << endl;
+
 }else if(my_rank == 1){ // Worker1 runs this code
+
+	pcl::console::TicToc tt;
+	tt.tic();
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -141,6 +147,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 
  	cout << "Received: " << cloud->points.size() << " points." << endl;
+ 	cout << "Time elapsed: " << tt.toc() << "ms" << endl;
 }
 
 
