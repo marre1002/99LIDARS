@@ -165,8 +165,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
     // Now receive the message with the allocated buffer
     MPI_Recv(number_buf, number_amount, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    printf("1 dynamically received %d numbers from 0.\n",
-           number_amount);
+   	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl;
     free(number_buf);
 
    /*int buf[32];
@@ -194,6 +193,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
  	MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
  	pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
+ 	//pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
  	int i;
 	for(i=0; i < count ; i=i+3) {
@@ -209,9 +209,15 @@ if(my_rank == 0){ // I'm master and handle the splitting
  	cout << "Received: " << cloud->points.size() << " points." << endl;
  	cout << "Time elapsed: " << tt.toc() << "ms" << endl;
 
+
+  	 pcl::PCDWriter writer;
+
+    // Save DoN features
+     writer.write<PointXYZ> ("slice.pcd", *cloud, false);
+
  	// Start processing data-slice --> RANSAC
 
-
+ 	/*
 	  // Create the segmentation object for the planar model and set all the parameters
 	  std::cerr << "Starting Planar Segmentation\n",tt.tic ();
 
@@ -246,12 +252,13 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
 	  cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
+	  */
 
 
 	  int root = 0;
 	  int buf [30] = {1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5};
 
-	  MPI_Send(&buf, 32, MPI_INT, root, 0, MPI_COMM_WORLD);
+	  MPI_Send(&buf, 21, MPI_INT, root, 0, MPI_COMM_WORLD);
 
 	  cout << "worker1 done!" << endl;
 }
