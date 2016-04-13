@@ -216,8 +216,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
  	//cout << "Time elapsed: " << tt.toc() << "ms" << endl;
 
     int n;
-    for(n = 0; n < 5; n++){
-   		cout << cloud->points[n].x << " " << cloud->points[n].y << " " <<cloud->points[n].z;
+    for(n = 0; n < 4; n++){
+   		cout << cloud->points[n].x << " " << cloud->points[n].y << " " <<cloud->points[n].z << " ";
     }
     cout << endl;
 
