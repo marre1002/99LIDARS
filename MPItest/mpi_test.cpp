@@ -74,6 +74,11 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	cout << "Read KTTI point cloud with " << (i/3) << " points in " << tt.toc() << " ms." << endl;
 
+	 pcl::PCDWriter writer;
+
+    // Save DoN features
+     writer.write<PointXYZ> ("slice.pcd", *cloud, false);
+
 
   tt.tic();
 
