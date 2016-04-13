@@ -141,26 +141,22 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
    count0++; // This is needed because of the 0-index array
 
-   cout << "Splitting data in: " << tt.toc() << " ms" << endl;
+ //  cout << "Splitting data in: " << tt.toc() << " ms" << endl;
    tt.tic();
    // Send the number of floats to send
    MPI_Send(&count0, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
    // Send the float buffer (first sector)
    MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 
-   cout << "Sending data in: " << tt.toc() << " ms" << endl;
+  // cout << "Sending data in: " << tt.toc() << " ms" << endl;
 
-   cout << "Waiting to get data back..." << endl;
+ //  cout << "Waiting to get data back..." << endl;
 
    //MPI_Recv(); // Receive data from the workers, sync problem?
 
+   cout << "-----------master buffer --------- count: " << count0 << endl; 
    int n;
-   for(n = 0; n < 9; n++){
-   	cout << cloud->points[n].x << "\t" << cloud->points[n].y << "\t" <<cloud->points[n].z << endl;
-   }
-
-   
-   for(n = 0; n < (3*9); n++){
+   for(n = 0; n < (3*5); n++){
    	cout << aa[n] << "\t";
    	if(n%3 == 0 && n > 1) 
    		cout << endl;
@@ -177,7 +173,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
     // Now receive the message with the allocated buffer
     MPI_Recv(number_buf, number_amount, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-   	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl;
+  // 	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl;
     free(number_buf);
 
    /*int buf[32];
@@ -217,12 +213,12 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	}
 
  	cout << "------------ worker1 -------------------" << endl;
-	cout << "Count is: " << count  << " count/3 = " << (count/3) << endl;
- 	cout << "Received: " << cloud->points.size() << " points." << endl;
- 	cout << "Time elapsed: " << tt.toc() << "ms" << endl;
+	//cout << "Count is: " << count  << " count/3 = " << (count/3) << endl;
+ 	//cout << "Received: " << cloud->points.size() << " points." << endl;
+ 	//cout << "Time elapsed: " << tt.toc() << "ms" << endl;
 
     int n;
-    for(n = 0; n < 9; n++){
+    for(n = 0; n < 5; n++){
    		cout << cloud->points[n].x << "\t" << cloud->points[n].y << "\t" <<cloud->points[n].z << endl;
     }
 
@@ -231,7 +227,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
   	 pcl::PCDWriter writer;
 
     // Save DoN features
-     writer.write<PointXYZ> ("slice.pcd", *cloud, false);
+   //  writer.write<PointXYZ> ("slice.pcd", *cloud, false);
 
  	// Start processing data-slice --> RANSAC
 
@@ -247,7 +243,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
-	  
+
 	  seg.setEpsAngle( 30.0f * (M_PI/180.0f) );
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
