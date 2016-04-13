@@ -147,7 +147,35 @@ if(my_rank == 0){ // I'm master and handle the splitting
    // Send the float buffer (first sector)
    MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 
-   cout << "Sending data in: " << tt.toc() << " ms" << endl; 
+   cout << "Sending data in: " << tt.toc() << " ms" << endl;
+
+   cout << "Waiting to get data back..." << endl;
+
+   //MPI_Recv(); // Receive data from the workers, sync problem?
+
+    
+    int number_amount;
+    MPI_Status status;
+    MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+    MPI_Get_count(&status, MPI_INT, &number_amount);
+
+    // Allocate a buffer to hold the incoming numbers
+    int* number_buf = (int*)malloc(sizeof(int) * number_amount);
+
+    // Now receive the message with the allocated buffer
+    MPI_Recv(number_buf, number_amount, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    printf("1 dynamically received %d numbers from 0.\n",
+           number_amount);
+    free(number_buf);
+
+   /*int buf[32];
+   MPI_Status status;
+   // receive message from any source
+   MPI_recv(buf, 32, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+   int replybuf[];
+   // send reply back to sender of the message received above
+   MPI_send(buf, 32, MPI_INT, status.MPI_SOURCE, tag, MPI_COMM_WORLD);*/
    
 
 }else if(my_rank == 1){ // Worker1 runs this code
@@ -176,15 +204,56 @@ if(my_rank == 0){ // I'm master and handle the splitting
 		cloud->push_back(point);
 	}
 
-
-
- 	
- 	//cloud->points.push_back(pcl::PointXYZ (buff[0], buff[1], buff[2]));
-
  	cout << "------------ worker1 -------------------" << endl;
 	cout << "Count is: " << count  << " count/3 = " << (count/3) << endl;
  	cout << "Received: " << cloud->points.size() << " points." << endl;
  	cout << "Time elapsed: " << tt.toc() << "ms" << endl;
+
+ 	// Start processing data-slice --> RANSAC
+
+
+	  // Create the segmentation object for the planar model and set all the parameters
+	  std::cerr << "Starting Planar Segmentation\n",tt.tic ();
+
+	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
+
+	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
+	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+	  pcl::SACSegmentation<pcl::PointXYZ> seg;
+	  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
+	  pcl::PCDWriter writer;
+	  seg.setEpsAngle( 30.0f * (M_PI/180.0f) );
+	  seg.setAxis(axis);
+	  seg.setOptimizeCoefficients (true);
+	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
+	  seg.setMethodType (pcl::SAC_RANSAC);
+	  seg.setMaxIterations (100);
+	  seg.setDistanceThreshold (0.30);
+	  seg.setInputCloud (cloud);
+	  seg.segment (*inliers, *coefficients);
+	  // Extract the planar inliers from the input cloud
+	  pcl::ExtractIndices<pcl::PointXYZ> extract;
+	  extract.setInputCloud (cloud);
+	  extract.setIndices (inliers);
+	  extract.setNegative (false);
+	  // Get the points associated with the planar surface
+	  extract.filter (*cloud_plane);
+	  //std::cout << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
+	  // Remove the planar inliers, extract the rest
+	  extract.setNegative (true);
+	  extract.filter (*cloud_f);
+	  *cloud_filtered = *cloud_f;
+	  cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
+
+
+	  int root = 0;
+	  int buf [30] = {1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5};
+
+	  MPI_Send(&buf, 32, MPI_INT, root, 0, MPI_COMM_WORLD);
+
+	  cout << "worker1 done!" << endl;
 }
 
 
