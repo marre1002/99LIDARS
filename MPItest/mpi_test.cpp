@@ -74,11 +74,6 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	cout << "Read KTTI point cloud with " << (i/3) << " points in " << tt.toc() << " ms." << endl;
 
-	 pcl::PCDWriter writer;
-
-    // Save DoN features
-     writer.write<PointXYZ> ("slice.pcd", *cloud, false);
-
 
   tt.tic();
 
@@ -103,41 +98,41 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	              	  aa[count0++] = cloud->points[iii].z;
 
 	              }else{
-	                  bb[++count1] = cloud->points[iii].x;
-	              	  bb[++count1] = cloud->points[iii].y;
-	              	  bb[++count1] = cloud->points[iii].z;
+	                  bb[count1++] = cloud->points[iii].x;
+	              	  bb[count1++] = cloud->points[iii].y;
+	              	  bb[count1++] = cloud->points[iii].z;
 	              }
 	          }else{
 	              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
-	                  cc[++count2] = cloud->points[iii].x;
-	              	  cc[++count2] = cloud->points[iii].y;
-	              	  cc[++count2] = cloud->points[iii].z;
+	                  cc[count2++] = cloud->points[iii].x;
+	              	  cc[count2++] = cloud->points[iii].y;
+	              	  cc[count2++] = cloud->points[iii].z;
 	              }else{
-	                  dd[++count3] = cloud->points[iii].x;
-	              	  dd[++count3] = cloud->points[iii].y;
-	              	  dd[++count3] = cloud->points[iii].z;
+	                  dd[count3++] = cloud->points[iii].x;
+	              	  dd[count3++] = cloud->points[iii].y;
+	              	  dd[count3++] = cloud->points[iii].z;
 	              }
 	          }    
 	      }else{
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
-	              	  ee[++count4] = cloud->points[iii].x;
-	              	  ee[++count4] = cloud->points[iii].y;
-	              	  ee[++count4] = cloud->points[iii].z;
+	              	  ee[count4++] = cloud->points[iii].x;
+	              	  ee[count4++] = cloud->points[iii].y;
+	              	  ee[count4++] = cloud->points[iii].z;
 	               }else{
-	                  ff[++count5] = cloud->points[iii].x;
-	              	  ff[++count5] = cloud->points[iii].y;
-	              	  ff[++count5] = cloud->points[iii].z;
+	                  ff[count5++] = cloud->points[iii].x;
+	              	  ff[count5++] = cloud->points[iii].y;
+	              	  ff[count5++] = cloud->points[iii].z;
 	               }
 	           }else{
 	               if(cloud->points[iii].y > cloud->points[iii].x){
-	                  gg[++count6] = cloud->points[iii].x;
-	              	  gg[++count6] = cloud->points[iii].y;
-	              	  gg[++count6] = cloud->points[iii].z;
+	                  gg[count6++] = cloud->points[iii].x;
+	              	  gg[count6++] = cloud->points[iii].y;
+	              	  gg[count6++] = cloud->points[iii].z;
 	                }else{
-	                  hh[++count7] = cloud->points[iii].x;
-	              	  hh[++count7] = cloud->points[iii].y;
-	              	  hh[++count7] = cloud->points[iii].z;
+	                  hh[count7++] = cloud->points[iii].x;
+	              	  hh[count7++] = cloud->points[iii].y;
+	              	  hh[count7++] = cloud->points[iii].z;
 	                }
 	          }
 	      }
@@ -167,7 +162,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
    
    for(n = 0; n < (3*9); n++){
    	cout << aa[n] << "\t";
-   	if(n%3 == 0) 
+   	if(n%3 == 0 && n > 1) 
    		cout << endl;
    }
     
@@ -240,7 +235,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
  	// Start processing data-slice --> RANSAC
 
- 	/*
+ 	
 	  // Create the segmentation object for the planar model and set all the parameters
 	  std::cerr << "Starting Planar Segmentation\n",tt.tic ();
 
@@ -252,7 +247,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
-	  pcl::PCDWriter writer;
+	  
 	  seg.setEpsAngle( 30.0f * (M_PI/180.0f) );
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
@@ -275,7 +270,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
 	  cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
-	  */
+	  
 
 
 	  int root = 0;
