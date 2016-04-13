@@ -139,7 +139,6 @@ if(my_rank == 0){ // I'm master and handle the splitting
    
   }
 
-   count0++; // This is needed because of the 0-index array
 
  //  cout << "Splitting data in: " << tt.toc() << " ms" << endl;
    tt.tic();
@@ -158,7 +157,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
    int n;
    for(n = 0; n < (3*5); n++){
    	cout << aa[n] << "\t";
-   	if(n%3 == 0 && n > 1) 
+   	if(n != 0 && n%3 == 0) 
    		cout << endl;
    }
     
@@ -224,13 +223,6 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 
 
-  	 pcl::PCDWriter writer;
-
-    // Save DoN features
-   //  writer.write<PointXYZ> ("slice.pcd", *cloud, false);
-
- 	// Start processing data-slice --> RANSAC
-
  	
 	  // Create the segmentation object for the planar model and set all the parameters
 	  std::cerr << "Starting Planar Segmentation\n",tt.tic ();
@@ -265,7 +257,12 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  extract.setNegative (true);
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
-	  cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
+	  //cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
+
+	  pcl::PCDWriter writer;
+
+    // Save DoN features
+     writer.write<PointXYZ> ("slice_ran.pcd", *cloud_filtered, false);
 	  
 
 
@@ -274,7 +271,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	  MPI_Send(&buf, 21, MPI_INT, root, 0, MPI_COMM_WORLD);
 
-	  cout << "worker1 done!" << endl;
+	  //cout << "worker1 done!" << endl;
 }
 
 
