@@ -91,16 +91,17 @@ if(my_rank == 0){ // I'm master and handle the splitting
   float ff [20000];
   float gg [20000];
   float hh [20000];
-  int count0,count1,count2,count3,count4,count5,count6,count7 = -1;
+  int count0,count1,count2,count3,count4,count5,count6,count7 = 0;
   
   double zero = 0.0000000;
   for (int iii = 0; iii < static_cast<int> (cloud->size()); ++iii){ 
     	if(cloud->points[iii].x > zero){
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > cloud->points[iii].x){
-	              	  aa[++count0] = cloud->points[iii].x;
-	              	  aa[++count0] = cloud->points[iii].y;
-	              	  aa[++count0] = cloud->points[iii].z;
+	              	  aa[count0++] = cloud->points[iii].x;
+	              	  aa[count0++] = cloud->points[iii].y;
+	              	  aa[count0++] = cloud->points[iii].z;
+
 	              }else{
 	                  bb[++count1] = cloud->points[iii].x;
 	              	  bb[++count1] = cloud->points[iii].y;
@@ -158,6 +159,17 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
    //MPI_Recv(); // Receive data from the workers, sync problem?
 
+   int n;
+   for(n = 0; n < 9; n++){
+   	cout << cloud->points[n].x << "\t" << cloud->points[n].y << "\t" <<cloud->points[n].z << endl;
+   }
+
+   
+   for(n = 0; n < (3*9); n++){
+   	cout << aa[n] << "\t";
+   	if(n%3 == 0) 
+   		cout << endl;
+   }
     
     int number_amount;
     MPI_Status status;
@@ -213,6 +225,12 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	cout << "Count is: " << count  << " count/3 = " << (count/3) << endl;
  	cout << "Received: " << cloud->points.size() << " points." << endl;
  	cout << "Time elapsed: " << tt.toc() << "ms" << endl;
+
+    int n;
+    for(n = 0; n < 9; n++){
+   		cout << cloud->points[n].x << "\t" << cloud->points[n].y << "\t" <<cloud->points[n].z << endl;
+    }
+
 
 
   	 pcl::PCDWriter writer;
