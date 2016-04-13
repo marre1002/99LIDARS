@@ -155,12 +155,11 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
    cout << "-----------master buffer --------- count: " << count0 << endl; 
    int n;
-   for(n = 0; n < (3*5); n++){
-   	cout << aa[n] << "\t";
-   	if(n != 0 && n%3 == 0) 
-   		cout << endl;
+   for(n = 0; n < (3*4); n++){
+   	cout << aa[n] << " ";
    }
     
+    cout << endl;
     int number_amount;
     MPI_Status status;
     MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
@@ -211,21 +210,21 @@ if(my_rank == 0){ // I'm master and handle the splitting
 		cloud->push_back(point);
 	}
 
- 	cout << "------------ worker1 -------------------" << endl;
+ 	//cout << "------------ worker1 -------------------" << endl;
 	//cout << "Count is: " << count  << " count/3 = " << (count/3) << endl;
  	//cout << "Received: " << cloud->points.size() << " points." << endl;
  	//cout << "Time elapsed: " << tt.toc() << "ms" << endl;
 
     int n;
     for(n = 0; n < 5; n++){
-   		cout << cloud->points[n].x << "\t" << cloud->points[n].y << "\t" <<cloud->points[n].z << endl;
+   		cout << cloud->points[n].x << " " << cloud->points[n].y << " " <<cloud->points[n].z;
     }
-
+    cout << endl;
 
 
  	
 	  // Create the segmentation object for the planar model and set all the parameters
-	  std::cerr << "Starting Planar Segmentation\n",tt.tic ();
+	 // std::cerr << "Starting Planar Segmentation\n",tt.tic ();
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
 
