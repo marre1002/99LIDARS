@@ -272,7 +272,22 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	 // dbscan test 
 
-	  cout << "Ransac done, now starting dbscan" << endl;
+	  cout << "Starting PCL euclidian clustering.. ";
+	  tt.tic();
+
+	    // Creating the KdTree object for the search method of the extraction
+	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+	  tree->setInputCloud (cloud_filtered);
+	  std::vector<pcl::PointIndices> cluster_indices;
+	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+	  ec.setClusterTolerance (0.50); // 0.02 = 2cm
+	  ec.setMinClusterSize (30);
+	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
+	  ec.setSearchMethod (tree);
+	  ec.setInputCloud (cloud_filtered);
+	  ec.extract (cluster_indices);
+	  cout << "done in: " << tt.toc() << " ms." << endl;
+	  
 
 	int num_threads = 4;
 	int minPts = 30; // minimal amout of points in order to be considered a cluster
@@ -290,8 +305,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	double start = omp_get_wtime();
 	//cout << "DBSCAN reading points.."<< endl;
-	int result = dbs.read_cloud(cloud_filtered);
-	cout << "==== points: " << result << endl;	
+	dbs.read_cloud(cloud_filtered);	
 
 	cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
 
