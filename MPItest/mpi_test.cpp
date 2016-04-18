@@ -272,6 +272,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	 // dbscan test 
 
+	  cout << "Ransac done, now starting dbscan" << endl;
+
 	int num_threads = 4;
 	int minPts = 50; // minimal amout of points in order to be considered a cluster
 	double eps = 0.8; // distance between points
@@ -287,8 +289,9 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	double start = omp_get_wtime();
 	//cout << "DBSCAN reading points.."<< endl;
-	if(dbs.read_cloud(cloud_filtered) == -1)
-			exit(-1);
+	int result = dbs.read_cloud(cloud_filtered);
+	cout << "==== points: " << result << endl;	
+
 	cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
 
 	// build kdtree for the points
@@ -301,14 +304,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	run_dbscan_algo_uf(dbs);
 	cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
 
-	if(outfilename != NULL)
-	{
-		ofstream outfile;
-		outfile.open(outfilename);
-		dbs.writeClusters_uf(outfile);
-		//dbs.writeClusters(outfile);
-		outfile.close();
-	}
+	
 	  
 
 

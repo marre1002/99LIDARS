@@ -48,6 +48,8 @@ namespace NWUClustering
 	{
 
 		cout << "number of points, from cluster: " << cloud->points.size() << endl;
+
+		int result = cloud->points.size();
 		ssize_t numBytesRead;
 		int     i, j;
 		int num_points, dims;
@@ -121,7 +123,7 @@ namespace NWUClustering
                                 m_pts->m_i_num_points = num_points;
 			}                
 		
-		return 0;		
+		return result;		
 	}
 
 	int Clusters::build_kdtree()
