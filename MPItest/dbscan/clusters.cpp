@@ -49,81 +49,28 @@ namespace NWUClustering
 
 		cout << "number of points, from cluster: " << cloud->points.size() << endl;
 
-		int result = cloud->points.size();
-		ssize_t numBytesRead;
-		int     i, j;
-		int num_points, dims;
-		char* infilename = NULL;
+		int num_points = cloud->points.size();
+		int dims = 3;
 
-			string line, line2, buf;
-			ifstream file(infilename);
-			stringstream ss;
+		m_pts->m_i_dims = dims;
+        m_pts->m_i_num_points = num_points;
 
-			if (file.is_open())
-  			{
-				// get the first line and get the dimensions
-				getline(file, line);
-				line2 = line;
-				ss.clear();				
-				ss << line2;
-			
-				dims = 0;
-				while(ss >> buf) // get the corordinate of the points
-					dims++;
-
-				// get point count
-				num_points = 0;
-				while (!file.eof())
-				{
-					if(line.length() == 0)
-                                                continue;
-					//cout << line << endl;
-					num_points++;
-					getline(file, line);
-				}
-				
-				cout << "Points " << num_points << " dimensions " << dims << endl;
                                
-				// allocate memory for points
-				m_pts = new Points;
-				m_pts->m_points.resize(num_points);
-                                for(int ll = 0; ll < num_points; ll++)
-                                        m_pts->m_points[ll].resize(dims);
-				
+		// allocate memory
 
-				file.clear();
-				file.seekg (0, ios::beg);
-				
-				getline(file, line);
-
-				i = 0;
-    				while (!file.eof())
-    				{
-					if(line.length() == 0)
-						continue;
-
-					//cout << line << endl;
-					ss.clear();
-					ss << line;
-
-					j = 0;
-					while(ss >> buf && j < dims) // get the corordinate of the points
-					{
-						m_pts->m_points[i][j] = atof(buf.c_str());
-						j++;
-					}
-					
-					i++;
-					getline(file, line);
-    				}
-
-    				file.close();
-  			
-                                m_pts->m_i_dims = dims;
-                                m_pts->m_i_num_points = num_points;
-			}                
+		m_pts = new Points;
+		m_pts->m_points.resize(num_points);
 		
-		return result;		
+        for(int ll = 0; ll < num_points; ll++)
+                m_pts->m_points[ll].resize(dims);
+		
+		for(int i = 0; i < num_points; i++){
+			m_pts->m_points[i][0] = cloud->points[i].x;
+			m_pts->m_points[i][1] = cloud->points[i].y;
+			m_pts->m_points[i][2] = cloud->points[i].z;
+		} 
+		
+		return 0;		
 	}
 
 	int Clusters::build_kdtree()
