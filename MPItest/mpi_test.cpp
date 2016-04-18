@@ -275,8 +275,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  cout << "Ransac done, now starting dbscan" << endl;
 
 	int num_threads = 4;
-	int minPts = 50; // minimal amout of points in order to be considered a cluster
-	double eps = 0.8; // distance between points
+	int minPts = 30; // minimal amout of points in order to be considered a cluster
+	double eps = 0.5; // distance between points
 
 
 	char* 	outfilename = "outfile";
