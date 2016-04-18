@@ -51,10 +51,6 @@ namespace NWUClustering
 
 		int num_points = cloud->points.size();
 		int dims = 3;
-
-		m_pts->m_i_dims = dims;
-        m_pts->m_i_num_points = num_points;
-
                                
 		// allocate memory
 
@@ -69,6 +65,9 @@ namespace NWUClustering
 			m_pts->m_points[i][1] = cloud->points[i].y;
 			m_pts->m_points[i][2] = cloud->points[i].z;
 		} 
+
+		m_pts->m_i_dims = dims;
+        m_pts->m_i_num_points = num_points;
 		
 		return 0;		
 	}
