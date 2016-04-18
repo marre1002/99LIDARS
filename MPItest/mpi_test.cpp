@@ -278,7 +278,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	int minPts = 50; // minimal amout of points in order to be considered a cluster
 	double eps = 0.8; // distance between points
 
-	char* 	outfilename = NULL;
+
+	char* 	outfilename = "outfile";
 	int     isBinaryFile = 0;
 	char*   infilename = NULL;
 
@@ -304,7 +305,14 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	run_dbscan_algo_uf(dbs);
 	cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
 
-	
+	if(outfilename != NULL)
+	{
+		ofstream outfile;
+		outfile.open(outfilename);
+		dbs.writeClusters_uf(outfile);
+		//dbs.writeClusters(outfile);
+		outfile.close();
+	}
 	  
 
 
