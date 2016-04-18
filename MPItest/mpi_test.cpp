@@ -27,6 +27,13 @@
 #include <iostream>
 #include <mpi.h>
 
+//************************************
+// 			DBSCAN includes
+#include "dbscan/dbscan.h"
+#include "dbscan/utils.h"
+#include "dbscan/kdtree2.hpp"
+//************************************
+
 using namespace pcl;
 using namespace std;
 
@@ -258,10 +265,50 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  *cloud_filtered = *cloud_f;
 	  //cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
 
-	  pcl::PCDWriter writer;
+	  
+	 //pcl::PCDWriter writer;
+     // Save DoN features
+     //writer.write<PointXYZ> ("slice_ran.pcd", *cloud_filtered, false);
 
-    // Save DoN features
-     writer.write<PointXYZ> ("slice_ran.pcd", *cloud_filtered, false);
+	 // dbscan test 
+
+	int num_threads = 4;
+	int minPts = 50; // minimal amout of points in order to be considered a cluster
+	double eps = 0.8; // distance between points
+
+	char* 	outfilename = NULL;
+	int     isBinaryFile = 0;
+	char*   infilename = NULL;
+
+	omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
+
+	NWUClustering::ClusteringAlgo dbs;
+	dbs.set_dbscan_params(eps, minPts);
+
+	double start = omp_get_wtime();
+	//cout << "DBSCAN reading points.."<< endl;
+	if(dbs.read_cloud(cloud_filtered) == -1)
+			exit(-1);
+	cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
+
+	// build kdtree for the points
+	start = omp_get_wtime();
+	dbs.build_kdtree();
+	cout << "Build kdtree took " << omp_get_wtime() - start << " seconds." << endl;
+
+	start = omp_get_wtime();
+	//run_dbscan_algo(dbs);
+	run_dbscan_algo_uf(dbs);
+	cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
+
+	if(outfilename != NULL)
+	{
+		ofstream outfile;
+		outfile.open(outfilename);
+		dbs.writeClusters_uf(outfile);
+		//dbs.writeClusters(outfile);
+		outfile.close();
+	}
 	  
 
 
