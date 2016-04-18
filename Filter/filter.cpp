@@ -12,12 +12,13 @@
 #include <pcl/console/time.h>
 #include <pcl/filters/passthrough.h>
 #include <string>
+#include <pcl/common/common.h>
 
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
 #include <pcl/console/parse.h>
-
+#include <sstream>
 
 int main (int argc, char** argv)
 {
@@ -36,6 +37,8 @@ int main (int argc, char** argv)
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_main (new pcl::PointCloud<pcl::PointXYZ>);
+
+  std::vector<pcl::PointXYZ> points;
 
   reader.read ("../../PCDdataFiles/data02.pcd", *cloud);
   std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
@@ -149,13 +152,13 @@ int main (int argc, char** argv)
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
 	  pcl::PCDWriter writer;
-	  seg.setEpsAngle( 30.0f * (M_PI/180.0f) );
+	  seg.setEpsAngle( 20.0f * (M_PI/180.0f) ); // Perfect value! 
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
-	  seg.setDistanceThreshold (0.30);
+	  seg.setDistanceThreshold (0.25); // 0.3
 	  seg.setInputCloud (v.at(ii));
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
@@ -187,42 +190,26 @@ int main (int argc, char** argv)
 	  ec.setInputCloud (cloud_filtered);
 	  ec.extract (cluster_indices);
 	  
+	  
+
 	  int j = 0;
 	  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
 	  {
-	    //pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
+	    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
 	    clusters++;
 	    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-	      cloud_main->points.push_back (cloud_filtered->points[*pit]); //*
-	      cloud_main->width = cloud_main->points.size ();
-	      cloud_main->height = 1;
-	      cloud_main->is_dense = true;
+	      cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
+	      cloud_cluster->width = cloud_cluster->points.size ();
+	      cloud_cluster->height = 1;
+	      cloud_cluster->is_dense = true;
 	    
-	    /*pcl::MomentOfInertiaEstimation <pcl::PointXYZ> feature_extractor;
-	    feature_extractor.setInputCloud (cloud_cluster);
-	    feature_extractor.compute ();
-
-	    std::vector <float> moment_of_inertia;
-	    std::vector <float> eccentricity;
-	    pcl::PointXYZ min_point_OBB;
-	    pcl::PointXYZ max_point_OBB;
-	    pcl::PointXYZ position_OBB;
-	    Eigen::Matrix3f rotational_matrix_OBB;
-	    float major_value, middle_value, minor_value;
-	    Eigen::Vector3f major_vector, middle_vector, minor_vector;
-	    Eigen::Vector3f mass_center;
-
-	    feature_extractor.getMomentOfInertia (moment_of_inertia);
-	    feature_extractor.getEccentricity (eccentricity);
-	    feature_extractor.getOBB (min_point_OBB, max_point_OBB, position_OBB, rotational_matrix_OBB);
-	    feature_extractor.getEigenValues (major_value, middle_value, minor_value);
-	    feature_extractor.getEigenVectors (major_vector, middle_vector, minor_vector);
-	    feature_extractor.getMassCenter (mass_center);
-
-	    Eigen::Vector3f position (position_OBB.x, position_OBB.y, position_OBB.z);
-	    Eigen::Quaternionf quat (rotational_matrix_OBB);
-	    viewer->addCube (position, quat, max_point_OBB.x - min_point_OBB.x, max_point_OBB.y - min_point_OBB.y, max_point_OBB.z - min_point_OBB.z, ("id" + j + ii));
-	    */ //viewer->addText3D ("Yoda" +j, position_OBB, 1.0, 1.0, 1.0,1.0, "id" + j ,0);
+	    
+	    pcl::PointXYZ minPt, maxPt;
+ 		pcl::getMinMax3D (*cloud_cluster, minPt, maxPt);
+ 		points.push_back(minPt);
+ 		points.push_back(maxPt);
+	    
+	    //viewer->addText3D ("Yoda" +j, position_OBB, 1.0, 1.0, 1.0,1.0, "id" + j ,0);
 	    //viewer->addText3D ("ID:"+j, position_OBB, 1.0, 1.0, 1.0, 1.0);
 	    
 	    //std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
@@ -230,6 +217,7 @@ int main (int argc, char** argv)
 	    //ss << "cloud_cluster_" << j << ".pcd";
 	    //writer.write<pcl::PointXYZ> (ss.str (), *cloud_cluster, false);*/ 
 	    j++;
+	    cloud_cluster->points.clear();
 	  }
 
 	  std::cout << "found: " << j << " clusters." << endl;
@@ -245,27 +233,41 @@ int main (int argc, char** argv)
 	  // -----Open 3D viewer and add point cloud-----
 	  //pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> grey(cloud,204, 204, 179);
 	  //pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> red(cloud, 255, 0, 0);
-
-	  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  	  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
 	  viewer->setBackgroundColor (0, 0, 0);
 	  viewer->addPointCloud<pcl::PointXYZ> (cloud, "source");
 	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0.2f, 0.2f, 0.2f, "source");
-	  viewer->addPointCloud<pcl::PointXYZ> (cloud_main, "main");
-	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1.0f, 0.0f, 0.0f, "main");  
+	  //viewer->addPointCloud<pcl::PointXYZ> (cloud_main, "main");
+	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1.0f, 0.0f, 0.0f, "main");  
 	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
 	  viewer->addCoordinateSystem (1.0);
 	  viewer->initCameraParameters ();
+
+
+        std::stringstream ss;
+	   for(int h = 0 ; h < points.size(); h++)
+	   {
+  		    if(h%2 == 0)
+  		    {
+  		    	ss << "id" << h << "test";
+    			std::string str = ss.str();
+  		    	pcl::PointXYZ a,b;
+  		    	a = points.at(h);
+  		    	b = points.at(h+1);
+  		    	viewer->addCube(a.x, b.x, a.y, b.y, a.z, b.z, 1.0,0.0,0.0, str ,0);
+  			}
+ 	   }	
 	  //------------------------------------------------------------------------------------------------------------
 
-	  int z = -1.5;
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(35,0,z), "line0");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,30,z), "line1");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-35,0,z), "line2");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-30,z), "line3");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,20,z), "line4");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,20,z), "line5");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,-20,z), "line6");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,-20,z), "line7");
+	  /*int z = -1.5;
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(35,0,z), "aline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,30,z), "bline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-35,0,z), "cline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-30,z), "dline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,20,z), "eline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,20,z), "fline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,-20,z), "gline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,-20,z), "hline"); */
 
 	   std::cout << "Found a total of: " << clusters << " clusters." << endl;
 
