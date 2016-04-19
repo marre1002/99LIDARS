@@ -28,7 +28,13 @@
 
 #include "utils.h"
 #include "clusters.h"
+#include <map>
+#include <string>
+#include <pcl/point_types.h>
+#include <pcl/common/common_headers.h>
 
+typedef	std::map<int, pcl::PointCloud<pcl::PointXYZ> > Cluster_map;
+typedef	std::pair<int, pcl::PointCloud<pcl::PointXYZ> > Pair;
 namespace NWUClustering
 {
 	class ClusteringAlgo : public Clusters
@@ -41,7 +47,7 @@ namespace NWUClustering
 		void set_dbscan_params(double eps, int minPts);
 		
 		void 	writeClusters(ostream& o); // regular dbscan algorithm
-		void    writeClusters_uf(ostream& o); // union find dbscan algorithm
+		void    writeClusters_uf(); // union find dbscan algorithm
 
 	public:
 		

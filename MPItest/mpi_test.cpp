@@ -160,12 +160,6 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
    //MPI_Recv(); // Receive data from the workers, sync problem?
 
-   cout << "-----------master buffer --------- count: " << count0 << endl; 
-   int n;
-   for(n = 0; n < (3*4); n++){
-   	cout << aa[n] << " ";
-   }
-    
     cout << endl;
     int number_amount;
     MPI_Status status;
@@ -222,19 +216,11 @@ if(my_rank == 0){ // I'm master and handle the splitting
  	//cout << "Received: " << cloud->points.size() << " points." << endl;
  	//cout << "Time elapsed: " << tt.toc() << "ms" << endl;
 
-    int n;
-    for(n = 0; n < 4; n++){
-   		cout << cloud->points[n].x << " " << cloud->points[n].y << " " <<cloud->points[n].z << " ";
-    }
-    cout << endl;
-
-
  	
 	  // Create the segmentation object for the planar model and set all the parameters
 	 // std::cerr << "Starting Planar Segmentation\n",tt.tic ();
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
-
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
 	  pcl::SACSegmentation<pcl::PointXYZ> seg;
@@ -242,13 +228,13 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
 
-	  seg.setEpsAngle( 30.0f * (M_PI/180.0f) );
+	  seg.setEpsAngle( 20.0f * (M_PI/180.0f) );
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
-	  seg.setDistanceThreshold (0.30);
+	  seg.setDistanceThreshold (0.25);
 	  seg.setInputCloud (cloud);
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
@@ -263,7 +249,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  extract.setNegative (true);
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
-	  //cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
+	  //cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n"; 
 
 	  
 	 //pcl::PCDWriter writer;
@@ -275,7 +261,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  cout << "Starting PCL euclidian clustering.. ";
 	  tt.tic();
 
-	    // Creating the KdTree object for the search method of the extraction
+	  /*  // Creating the KdTree object for the search method of the extraction
 	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 	  tree->setInputCloud (cloud_filtered);
 	  std::vector<pcl::PointIndices> cluster_indices;
@@ -286,7 +272,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  ec.setSearchMethod (tree);
 	  ec.setInputCloud (cloud_filtered);
 	  ec.extract (cluster_indices);
-	  cout << "done in: " << tt.toc() << " ms." << endl;
+	  cout << "done in: " << tt.toc() << " ms." << endl; */
 	  
 
 	int num_threads = 4;
@@ -294,7 +280,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	double eps = 0.5; // distance between points
 
 
-	char* 	outfilename = "outfile";
+
 	int     isBinaryFile = 0;
 	char*   infilename = NULL;
 
@@ -319,14 +305,14 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	run_dbscan_algo_uf(dbs);
 	cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
 
-	if(outfilename != NULL)
-	{
-		ofstream outfile;
-		outfile.open(outfilename);
-		dbs.writeClusters_uf(outfile);
+	//if(outfilename != NULL)
+	//{
+	//	ofstream outfile;
+	//	outfile.open(outfilename);
+		dbs.writeClusters_uf();
 		//dbs.writeClusters(outfile);
-		outfile.close();
-	}
+		//outfile.close();
+	//}
 	  
 
 

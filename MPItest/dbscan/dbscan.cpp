@@ -75,9 +75,10 @@ namespace NWUClustering
 		cout << "Number of clusters: " << m_clusters.size() << endl;
 	}
 
-	void ClusteringAlgo::writeClusters_uf(ostream& o)
+	void ClusteringAlgo::writeClusters_uf()
 	{
 		// writing point id and cluster id pairs per line, noise has cluster id 0	
+		Cluster_map cmap;
 		vector <int> clusters;
 		clusters.resize(m_pts->m_i_num_points, 0);
 
@@ -129,13 +130,26 @@ namespace NWUClustering
 			// skip if i is not a root
 		}
 
+		//tMap.insert(TStrStrPair("yes", "no"));
+		
 		// write point id and cluster ids to file
+		pcl::PointCloud<pcl::PointXYZ> cloud;
+		//cmap.insert(Pair(2, cloud));
+
 		for(i = 0; i < m_pts->m_i_num_points; i++)
 		{
 			//for (j = 0; j < m_pts->m_i_dims; j++)
-            		//	o << " " << m_pts->m_points[i][j];	
+            		//	o << " " << m_pts->m_points[i][j];
+
+            if(clusters[m_parents[i]] != 0)
+            {
+            	cout << "before map" << endl;
+            	 cmap[clusters[m_parents[i]]].push_back(pcl::PointXYZ(m_pts->m_points[i][0], m_pts->m_points[i][1], m_pts->m_points[i][2]));
+            	
+            }	
 		
-			o << i << " " << clusters[m_parents[i]] << endl;
+			//cout << m_pts->m_points[i][0] << m_pts->m_points[i][1] << m_pts->m_points[i][2] << "\t\t" << clusters[m_parents[i]] << endl; 	
+			//o << i << " " << clusters[m_parents[i]] << endl;
 		}
 
 		cout << "Total points " << noise + sum_points << " pt_in_cls " << sum_points << " noise " << noise << endl;
