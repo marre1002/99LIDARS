@@ -164,15 +164,15 @@ if(my_rank == 0){ // I'm master and handle the splitting
     int number_amount;
     MPI_Status status;
     MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-    MPI_Get_count(&status, MPI_INT, &number_amount);
+    MPI_Get_count(&status, MPI_FLOAT, &number_amount);
 
     // Allocate a buffer to hold the incoming numbers
-    int* number_buf = (int*)malloc(sizeof(int) * number_amount);
+    float* number_buf = (float*)malloc(sizeof(float) * number_amount);
 
     // Now receive the message with the allocated buffer
-    MPI_Recv(number_buf, number_amount, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-  // 	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl;
+  	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl;
     free(number_buf);
 
    /*int buf[32];
@@ -305,21 +305,14 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	run_dbscan_algo_uf(dbs);
 	cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
 
-	//if(outfilename != NULL)
-	//{
-	//	ofstream outfile;
-	//	outfile.open(outfilename);
-		dbs.writeClusters_uf();
-		//dbs.writeClusters(outfile);
-		//outfile.close();
-	//}
-	  
 
-
-	  int root = 0;
-	  int buf [30] = {1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5};
-
-	  MPI_Send(&buf, 21, MPI_INT, root, 0, MPI_COMM_WORLD);
+	// Calculate boxes from all the clusters found
+	float c_buff [200];
+	int buffer_size = dbs.writeClusters_uf(c_buff);
+	
+	//Send back boxes of found clusters to master
+	int root = 0;
+	 MPI_Send(&c_buff, buffer_size, MPI_FLOAT, root, 0, MPI_COMM_WORLD);
 
 	  //cout << "worker1 done!" << endl;
 }

@@ -48,7 +48,7 @@ namespace NWUClustering
 		void set_dbscan_params(double eps, int minPts);
 		
 		void 	writeClusters(ostream& o); // regular dbscan algorithm
-		void    writeClusters_uf(); // union find dbscan algorithm
+		int    writeClusters_uf(float *buffer); // union find dbscan algorithm
 
 	public:
 		

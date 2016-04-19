@@ -75,7 +75,7 @@ namespace NWUClustering
 		cout << "Number of clusters: " << m_clusters.size() << endl;
 	}
 
-	void ClusteringAlgo::writeClusters_uf()
+	int ClusteringAlgo::writeClusters_uf(float *buffer)
 	{
 		// writing point id and cluster id pairs per line, noise has cluster id 0	
 		Cluster_map cmap;
@@ -149,16 +149,30 @@ namespace NWUClustering
 			//o << i << " " << clusters[m_parents[i]] << endl;
 		}
 
+
+		//float buff [200];
+		int b_count = 0;
 		for(it iterator = cmap.begin(); iterator != cmap.end(); ++iterator) {
     		// iterator->first = key
-    		cout << "Sice of this cluster: " << iterator->second.size() << endl;
-    		// Repeat if you also want to iterate through the second map.
+    		//cout << "Sice of this cluster: " << iterator->second.size() << endl;
+    		pcl::PointXYZ minPt, maxPt;
+    		pcl::getMinMax3D(iterator->second, minPt, maxPt);
+    		buffer[b_count++] = minPt.x;
+    		buffer[b_count++] = minPt.y;
+    		buffer[b_count++] = minPt.z;
+    		buffer[b_count++] = maxPt.x;
+    		buffer[b_count++] = maxPt.y;
+    		buffer[b_count++] = maxPt.z;
+
 		}
+
 
 		cout << "Total points " << noise + sum_points << " pt_in_cls " << sum_points << " noise " << noise << endl;
 		cout << "Number of clusters: " << count << endl;
 
 		clusters.clear();
+
+		return(b_count);
 	}
 
 	void run_dbscan_algo_uf(ClusteringAlgo& dbs)
