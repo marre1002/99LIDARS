@@ -34,7 +34,8 @@
 #include <pcl/common/common_headers.h>
 
 typedef	std::map<int, pcl::PointCloud<pcl::PointXYZ> > Cluster_map;
-typedef	std::pair<int, pcl::PointCloud<pcl::PointXYZ> > Pair;
+typedef std::map<int, pcl::PointCloud<pcl::PointXYZ> >::iterator it;
+
 namespace NWUClustering
 {
 	class ClusteringAlgo : public Clusters

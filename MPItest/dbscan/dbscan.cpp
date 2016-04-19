@@ -134,6 +134,7 @@ namespace NWUClustering
 		
 		// write point id and cluster ids to file
 		pcl::PointCloud<pcl::PointXYZ> cloud;
+
 		//cmap.insert(Pair(2, cloud));
 
 		for(i = 0; i < m_pts->m_i_num_points; i++)
@@ -142,14 +143,16 @@ namespace NWUClustering
             		//	o << " " << m_pts->m_points[i][j];
 
             if(clusters[m_parents[i]] != 0)
-            {
-            	cout << "before map" << endl;
             	 cmap[clusters[m_parents[i]]].push_back(pcl::PointXYZ(m_pts->m_points[i][0], m_pts->m_points[i][1], m_pts->m_points[i][2]));
-            	
-            }	
 		
 			//cout << m_pts->m_points[i][0] << m_pts->m_points[i][1] << m_pts->m_points[i][2] << "\t\t" << clusters[m_parents[i]] << endl; 	
 			//o << i << " " << clusters[m_parents[i]] << endl;
+		}
+
+		for(it iterator = cmap.begin(); iterator != cmap.end(); ++iterator) {
+    		// iterator->first = key
+    		cout << "Sice of this cluster: " << iterator->second.size() << endl;
+    		// Repeat if you also want to iterate through the second map.
 		}
 
 		cout << "Total points " << noise + sum_points << " pt_in_cls " << sum_points << " noise " << noise << endl;
