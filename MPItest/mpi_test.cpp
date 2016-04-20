@@ -290,7 +290,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	int num_threads = 4;
 	int minPts = 30; // minimal amout of points in order to be considered a cluster
-	double eps = 0.5; // distance between points
+	double eps = 1; // distance between points
 
 
 

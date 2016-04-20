@@ -42,7 +42,6 @@ int main (int argc, char** argv)
     while (myfile >> a)
     {
         v.push_back(a);
-        cout << a << endl;
     }
    // ----------------------------------------------------------------------------------------------------------
    // -----Open 3D viewer and add point cloud-----
@@ -58,13 +57,17 @@ int main (int argc, char** argv)
    viewer->addCoordinateSystem (1.0);
    viewer->initCameraParameters ();
 
+   std::vector<pcl::PointXYZ> vpoints;
+
 
    std::stringstream ss;
-	   for(int h = 0 ; h < (v.size()/6); h++)
+	   for(int h = 0 ; h < v.size(); h++)
 	   {
-  		    	ss << "id" << h << "test";
-    			std::string str = ss.str();
-  		    	viewer->addCube(v.at(h), v.at(h+3), v.at(h+1), v.at(h+4), v.at(h+2), v.at(h+5), 1.0,0.0,0.0, str ,0);
+  		    	if(h%6 == 0){
+  		    		ss << "id" << h << "test";
+    				std::string str = ss.str();
+  		    		viewer->addCube(v.at(h), v.at(h+3), v.at(h+1), v.at(h+4), v.at(h+2), v.at(h+5), 1.0,0.0,0.0, str ,0);
+  		    	}
  	   }	
 	  //------------------------------------------------------------------------------------------------------------
 
