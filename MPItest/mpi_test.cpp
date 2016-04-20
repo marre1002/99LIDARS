@@ -150,9 +150,9 @@ if(my_rank == 0){ // I'm master and handle the splitting
  //  cout << "Splitting data in: " << tt.toc() << " ms" << endl;
    tt.tic();
    // Send the number of floats to send
-   MPI_Send(&count0, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+   MPI_Send(&count1, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
    // Send the float buffer (first sector)
-   MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+   MPI_Send(&bb, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 
   // cout << "Sending data in: " << tt.toc() << " ms" << endl;
 
@@ -289,8 +289,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  
 
 	int num_threads = 4;
-	int minPts = 40; // minimal amout of points in order to be considered a cluster
-	double eps = 1.2; // distance between points
+	int minPts = 30; // minimal amout of points in order to be considered a cluster
+	double eps = 0.5; // distance between points
 
 
 	omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
