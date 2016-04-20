@@ -28,18 +28,38 @@ int main (int argc, char** argv)
 
 
  	// Read in the cloud data
-   	std::string infile = "../../PCDdataFiles/";
+   	std::string binfile = "../../BinAndTxt/";
+   	std::string txtfile = "../../BinAndTxt/";
 
-   	for(int j= 2; j < 4; j++){
+   	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+	viewer->setBackgroundColor (0, 0, 0);
+	viewer->addCoordinateSystem (1.0);
+	viewer->initCameraParameters ();
 
-   		std::string curfile = "00" + to_string(j) + ".bin";
-   		infile = infile + curfile;
-   		cout << infile << endl;
+	//TODO: Implement some sort of control
+	//viewer->registerKeyboardCallback(keyboardEventOccurred, (void*)&viewer)
+
+	int z = -1.5;
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(35,0,z), "aline");
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,30,z), "bline");
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-35,0,z), "cline");
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-30,z), "dline");
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,20,z), "eline");
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,20,z), "fline");
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,-20,z), "gline");
+	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,-20,z), "hline");
+
+
+   	for(int j= 0; j < 9; j++){
+
+   		std::string curfile = "000000000" + to_string(j) + ".bin";
+   		binfile = binfile + curfile;
+   		cout << binfile << endl;
 
 		// load point cloud
-		fstream input(infile.c_str(), ios::in | ios::binary);
+		fstream input(binfile.c_str(), ios::in | ios::binary);
 		if(!input.good()){
-			cerr << "Could not read file: " << infile << endl;
+			cerr << "Could not read file: " << binfile << endl;
 			exit(EXIT_FAILURE);
 		}
 		input.seekg(0, ios::beg);
@@ -57,28 +77,26 @@ int main (int argc, char** argv)
 		}
 		input.close();
 
-		cout << "Read KTTI point cloud with " << cloud->points.size() << " points." << endl;
-
+		std::string curtxt = "000000000" + to_string(j) + ".txt";
+		txtfile = txtfile + curtxt;
 		//Get corresponding cluster file.
-	  	std::fstream myfile("clusters.txt", std::ios_base::in);
-	  	if(!myfile.good()){
-			cerr << "Could not read file: " << myfile << endl;
+	  	fstream txtInput(txtfile.c_str(), ios::in);
+		if(!txtInput.good()){
+			cerr << "Could not read file: " << txtfile << endl;
+			exit(EXIT_FAILURE);
 		}
 
 	  	std::vector<float> v;
 
 	    float a;
-	    while (myfile >> a)
+	    while (txtInput >> a)
 	    {
 	        v.push_back(a);
 	    }
 
-	   	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-	   	viewer->setBackgroundColor (0, 0, 0);
+	   	
 	   	viewer->addPointCloud<pcl::PointXYZ> (cloud, "source");
 	   	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0.2f, 0.2f, 0.2f, "source");
-	   	viewer->addCoordinateSystem (1.0);
-	   	viewer->initCameraParameters ();
 
 	   	std::vector<pcl::PointXYZ> vpoints;
 
@@ -91,25 +109,24 @@ int main (int argc, char** argv)
 	    			std::string str = ss.str();
 	  				viewer->addCube(v.at(h), v.at(h+3), v.at(h+1), v.at(h+4), v.at(h+2), v.at(h+5), 1.0,0.0,0.0, str ,0);
 	  			}
-	    	}	
+	    }	
+
 		  //------------------------------------------------------------------------------------------------------------
 
-		int z = -1.5;
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(35,0,z), "aline");
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,30,z), "bline");
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-35,0,z), "cline");
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-30,z), "dline");
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,20,z), "eline");
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,20,z), "fline");
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,-20,z), "gline");
-		viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,-20,z), "hline");
 
 
-		while (!viewer->wasStopped ()){
-		   viewer->spinOnce (10000);
+		while(!viewer->wasStopped ()){
+		   viewer->spinOnce (1000);
+		   viewer->removeAllShapes();
+		   viewer->removeAllPointClouds();
 		   break;
 		   //boost::this_thread::sleep (boost::posix_time::microseconds (100000));
 		}
+
+
+
+		binfile = "../../BinAndTxt/";
+		txtfile = "../../BinAndTxt/";
   	}
   return (0);
 }
