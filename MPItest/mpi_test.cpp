@@ -172,51 +172,21 @@ if(my_rank == 0){ // I'm master and handle the splitting
     // Now receive the message with the allocated buffer
     MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-  	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl;
+  	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl; 
 
-
-    
-
-     // ----------------------------------------------------------------------------------------------------------
-	  // -----Open 3D viewer and add point cloud-----
-	  //pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> grey(cloud,204, 204, 179);
-	  //pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> red(cloud, 255, 0, 0);
-  	  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-	  viewer->setBackgroundColor (0, 0, 0);
-	  viewer->addPointCloud<pcl::PointXYZ> (cloud, "source");
-	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0.8f, 0.8f, 0.8f, "source");
-	  //viewer->addPointCloud<pcl::PointXYZ> (cloud_main, "main");
-	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1.0f, 0.0f, 0.0f, "main");  
-	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
-	  viewer->addCoordinateSystem (1.0);
-	  viewer->initCameraParameters ();
-
-
-        std::stringstream ss;
-	   for(int h = 0 ; h < (number_amount/6); h++)
-	   {
-  		    	ss << "id" << h << "test";
-    			std::string str = ss.str();
-  		    	viewer->addCube(number_buf[h], number_buf[h+3], number_buf[h+1], number_buf[h+4], number_buf[h+2], number_buf[h+5], 1.0,0.0,0.0, str ,0);
- 	   }	
-	  //------------------------------------------------------------------------------------------------------------
-
-	  int z = -1.5;
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(35,0,z), "aline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,30,z), "bline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-35,0,z), "cline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-30,z), "dline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,20,z), "eline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,20,z), "fline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(20,-20,z), "gline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,-20,z), "hline");
-
-	  while (!viewer->wasStopped ())
+	  ofstream myfile ("clusters.txt");
+	  if (myfile.is_open())
 	  {
-	    viewer->spinOnce (100);
-	    boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+	    
+	    for(int count = 0; count < number_amount; ++count){
+	        myfile << number_buf << endl;
+	    }
+	    myfile.close();
+	    cout << "Wrote clusters to clusters.txt";
 	  }
-	  free(number_buf);
+	  else cout << "Unable to open file";
+
+	free(number_buf);
 
    /*int buf[32];
    MPI_Status status;
