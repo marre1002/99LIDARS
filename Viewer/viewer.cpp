@@ -21,6 +21,14 @@
 #include <sstream>
 #include "include/util.h"
 
+
+
+void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void* viewer_void){
+
+	
+}
+
+
 int main (int argc, char** argv)
 {
 
@@ -130,3 +138,4 @@ int main (int argc, char** argv)
   	}
   return (0);
 }
+
