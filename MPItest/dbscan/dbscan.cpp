@@ -163,6 +163,12 @@ namespace NWUClustering
     		buffer[b_count++] = maxPt.x;
     		buffer[b_count++] = maxPt.y;
     		buffer[b_count++] = maxPt.z;
+    		cout << minPt.x << endl;
+    		cout << minPt.y << endl;
+    		cout << minPt.z << endl;
+    		cout << maxPt.x << endl;
+    		cout << maxPt.y << endl;
+    		cout << maxPt.z << endl;
 
 		}
 
