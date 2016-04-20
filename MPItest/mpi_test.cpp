@@ -152,7 +152,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
    // Send the number of floats to send
    MPI_Send(&count1, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
    // Send the float buffer (first sector)
-   MPI_Send(&bb, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+   MPI_Send(&bb, count1, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
 
   // cout << "Sending data in: " << tt.toc() << " ms" << endl;
 
