@@ -24,14 +24,37 @@ int main (int argc, char** argv)
 {
 
 
-  // Read in the cloud data
-  pcl::PCDReader reader;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+	 // Timer object
+  pcl::console::TicToc tt;
 
-  std::vector<pcl::PointXYZ> points;
 
-  reader.read ("../../PCDdataFiles/data02.pcd", *cloud);
-  std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
+  tt.tic();
+
+ // Read in the cloud data
+   std::string infile = "../../PCDdataFiles/002.bin";
+
+	// load point cloud
+	fstream input(infile.c_str(), ios::in | ios::binary);
+	if(!input.good()){
+		cerr << "Could not read file: " << infile << endl;
+		exit(EXIT_FAILURE);
+	}
+	input.seekg(0, ios::beg);
+
+	//pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
+	float ignore;
+	int i;
+	for (i=0; input.good() && !input.eof(); i++) {
+		pcl::PointXYZ point;
+		input.read((char *) &point.x, 3*sizeof(float));
+		input.read((char *) &ignore, sizeof(float));
+		cloud->push_back(point);
+	}
+	input.close();
+
+	cout << "Read KTTI point cloud with " << cloud->points.size() << " points in " << tt.toc() << " ms." << endl;
 
 
   std::fstream myfile("clusters.txt", std::ios_base::in);

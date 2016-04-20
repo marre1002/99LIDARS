@@ -289,13 +289,9 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  
 
 	int num_threads = 4;
-	int minPts = 30; // minimal amout of points in order to be considered a cluster
-	double eps = 1; // distance between points
+	int minPts = 40; // minimal amout of points in order to be considered a cluster
+	double eps = 1.2; // distance between points
 
-
-
-	int     isBinaryFile = 0;
-	char*   infilename = NULL;
 
 	omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
 
