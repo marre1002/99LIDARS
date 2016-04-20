@@ -21,10 +21,15 @@
 #include <sstream>
 #include "include/util.h"
 
-
+bool start = false;
 
 void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void* viewer_void){
+	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer = *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
 
+	if(event.getKeySym() == "s" && event.keyDown()){
+		cout << "Here we go." << endl;
+		start = true;
+	}
 	
 }
 
@@ -45,7 +50,7 @@ int main (int argc, char** argv)
 	viewer->initCameraParameters ();
 
 	//TODO: Implement some sort of control
-	//viewer->registerKeyboardCallback(keyboardEventOccurred, (void*)&viewer)
+	viewer->registerKeyboardCallback(keyboardEventOccurred, (void*)&viewer);
 
 	int z = -1.5;
 	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(35,0,z), "aline");
@@ -58,9 +63,17 @@ int main (int argc, char** argv)
 	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-20,-20,z), "hline");
 
 
-   	for(int j= 0; j < 9; j++){
+   	for(int j= 0; j < 21; j++){
 
-   		std::string curfile = "000000000" + to_string(j) + ".bin";
+   		std::string curfile = "";
+
+   		if(j >= 10){
+   			curfile = "00000000" + to_string(j) + ".bin";
+   		}else{
+   			curfile = "000000000" + to_string(j) + ".bin";
+   		}
+
+   		
    		binfile = binfile + curfile;
    		cout << binfile << endl;
 
@@ -85,7 +98,14 @@ int main (int argc, char** argv)
 		}
 		input.close();
 
-		std::string curtxt = "000000000" + to_string(j) + ".txt";
+		std::string curtxt;
+
+		if(j >= 10){
+			curtxt = "00000000" + to_string(j) + ".txt";
+		}else{
+			curtxt = "000000000" + to_string(j) + ".txt";
+		}
+		
 		txtfile = txtfile + curtxt;
 		//Get corresponding cluster file.
 	  	fstream txtInput(txtfile.c_str(), ios::in);
@@ -124,10 +144,13 @@ int main (int argc, char** argv)
 
 
 		while(!viewer->wasStopped ()){
-		   viewer->spinOnce (1000);
-		   viewer->removeAllShapes();
-		   viewer->removeAllPointClouds();
-		   break;
+			while(start == false){
+				viewer->spinOnce(1000);
+			}
+		   	viewer->spinOnce (10);
+		   	viewer->removeAllShapes();
+		   	viewer->removeAllPointClouds();
+		   	break;
 		   //boost::this_thread::sleep (boost::posix_time::microseconds (100000));
 		}
 
