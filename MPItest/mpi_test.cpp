@@ -179,10 +179,10 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  {
 	    
 	    for(int count = 0; count < number_amount; ++count){
-	        myfile << number_buf << endl;
+	        myfile << number_buf[count] << endl;
 	    }
 	    myfile.close();
-	    cout << "Wrote clusters to clusters.txt";
+	    cout << "Wrote clusters to clusters.txt" << endl;
 	  }
 	  else cout << "Unable to open file";
 
@@ -322,6 +322,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	// Calculate boxes from all the clusters found
 	float c_buff [200];
 	int buffer_size = dbs.writeClusters_uf(c_buff);
+
 	
 	//Send back boxes of found clusters to master
 	int root = 0;
