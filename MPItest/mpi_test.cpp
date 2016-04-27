@@ -335,17 +335,17 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	//cout << "DBSCAN reading points.."<< endl;
 	dbs.read_cloud(cloud_filtered);	
 
-	cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
+	//cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
 
 	// build kdtree for the points
 	start = omp_get_wtime();
 	dbs.build_kdtree();
-	cout << "Build kdtree took " << omp_get_wtime() - start << " seconds." << endl;
+	//cout << "Build kdtree took " << omp_get_wtime() - start << " seconds." << endl;
 
 	start = omp_get_wtime();
 	//run_dbscan_algo(dbs);
 	run_dbscan_algo_uf(dbs);
-	cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
+	//cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
 
 
 	// Calculate boxes from all the clusters found
