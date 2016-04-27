@@ -85,14 +85,15 @@ if(my_rank == 0){ // I'm master and handle the splitting
   tt.tic();
 
   int m_tag = 0; // MPI message tag
-  float aa [20000];
-  float bb [20000];
-  float cc [20000];
-  float dd [20000];
-  float ee [20000];
-  float ff [20000];
-  float gg [20000];
-  float hh [20000];
+  int bufferLimit = 20000;
+  float aa [bufferLimit];
+  float bb [bufferLimit];
+  float cc [bufferLimit];
+  float dd [bufferLimit];
+  float ee [bufferLimit];
+  float ff [bufferLimit];
+  float gg [bufferLimit];
+  float hh [bufferLimit];
   int count0,count1,count2,count3,count4,count5,count6,count7 = 0;
   
   double zero = 0.0000000;
@@ -148,45 +149,72 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 
  //  cout << "Splitting data in: " << tt.toc() << " ms" << endl;
-   tt.tic();
-   // Send the number of floats to send
-   MPI_Send(&count1, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-   // Send the float buffer (first sector)
-   MPI_Send(&bb, count1, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+   int loop;
+   for(loop = 0; loop < 8 ; loop++){
+	   tt.tic();
+	   cout << "Sending " << loop << " sector for processing...  ";
+	   if(loop == 0){
+	   		MPI_Send(&count0, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}else if(loop == 1){
+	   		MPI_Send(&count1, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&bb, count1, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}else if(loop == 2){
+	   		MPI_Send(&count2, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&cc, count2, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}else if(loop == 3){
+	   		MPI_Send(&count3, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&dd, count3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}else if(loop == 4){
+	   		MPI_Send(&count4, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&ee, count4, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}else if(loop == 5){
+	   		MPI_Send(&count5, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&ff, count5, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}else if(loop == 6){
+	   		MPI_Send(&count6, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&gg, count6, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}else{
+	   		MPI_Send(&count7, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
+	   		MPI_Send(&hh, count7, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
+	   	}
 
-  // cout << "Sending data in: " << tt.toc() << " ms" << endl;
+	  // cout << "Sending data in: " << tt.toc() << " ms" << endl;
 
- //  cout << "Waiting to get data back..." << endl;
+	 //  cout << "Waiting to get data back..." << endl;
 
-   //MPI_Recv(); // Receive data from the workers, sync problem?
+	   //MPI_Recv(); // Receive data from the workers, sync problem?
 
-    cout << endl;
-    int number_amount;
-    MPI_Status status;
-    MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-    MPI_Get_count(&status, MPI_FLOAT, &number_amount);
+	    int number_amount;
+	    MPI_Status status;
+	    MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+	    MPI_Get_count(&status, MPI_FLOAT, &number_amount);
 
-    // Allocate a buffer to hold the incoming numbers
-    float* number_buf = (float*)malloc(sizeof(float) * number_amount);
+	    // Allocate a buffer to hold the incoming numbers
+	    float* number_buf = (float*)malloc(sizeof(float) * number_amount);
 
-    // Now receive the message with the allocated buffer
-    MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	    // Now receive the message with the allocated buffer
+	    MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-  	cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl; 
+	  	//cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl; 
 
-	  ofstream myfile ("clusters.txt");
-	  if (myfile.is_open())
-	  {
-	    
-	    for(int count = 0; count < number_amount; ++count){
-	        myfile << number_buf[count] << endl;
-	    }
-	    myfile.close();
-	    cout << "Wrote clusters to clusters.txt" << endl;
-	  }
-	  else cout << "Unable to open file";
+		 /* ofstream myfile ("clusters.txt");
+		  if (myfile.is_open())
+		  {
+		    
+		    for(int count = 0; count < number_amount; ++count){
+		        myfile << number_buf[count] << endl;
+		    }
+		    myfile.close();
+		    //cout << "Wrote clusters to clusters.txt" << endl;
+		  }
+		  else cout << "Unable to open file";*/
 
-	free(number_buf);
+		free(number_buf);
+
+		cout << "Done in " << tt.toc() << " ms." << endl;
+
+	} // end for
 
    /*int buf[32];
    MPI_Status status;
@@ -200,7 +228,12 @@ if(my_rank == 0){ // I'm master and handle the splitting
 }else if(my_rank == 1){ // Worker1 runs this code
 
 	pcl::console::TicToc tt;
+	
+
+
 	tt.tic();
+
+	for(int t = 0;t < 8; t++){
 
 	int count;
 
@@ -271,8 +304,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	 // dbscan test 
 
-	  cout << "Starting PCL euclidian clustering.. ";
-	  tt.tic();
+	  //cout << "Starting PCL euclidian clustering.. ";
+	  //tt.tic();
 
 	  /*  // Creating the KdTree object for the search method of the extraction
 	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
@@ -323,6 +356,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	//Send back boxes of found clusters to master
 	int root = 0;
 	 MPI_Send(&c_buff, buffer_size, MPI_FLOAT, root, 0, MPI_COMM_WORLD);
+
+	}
 
 	  //cout << "worker1 done!" << endl;
 }

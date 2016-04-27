@@ -124,7 +124,7 @@ int main (int argc, char** argv)
 
 	   	
 	   	viewer->addPointCloud<pcl::PointXYZ> (cloud, "source");
-	   	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0.2f, 0.2f, 0.2f, "source");
+	   	viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0.5f, 0.5f, 0.5f, "source");
 
 	   	std::vector<pcl::PointXYZ> vpoints;
 
