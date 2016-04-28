@@ -152,7 +152,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
    int loop;
    for(loop = 0; loop < 8 ; loop++){
 	   tt.tic();
-	   cout << "Sending " << loop << " sector for processing...  ";
+	  // cout << "Sending " << loop << " sector for processing...  ";
 	   if(loop == 0){
 	   		MPI_Send(&count0, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
 	   		MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
@@ -212,7 +212,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 		free(number_buf);
 
-		cout << "Done in " << tt.toc() << " ms." << endl;
+		//cout << "Done in " << tt.toc() << " ms." << endl;
 
 	} // end for
 
@@ -253,6 +253,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 		PointXYZ point;
 		point.x = buff[i];
 		point.y = buff[i+1];
+
 		point.z = buff[i+2];
 		cloud->push_back(point);
 	}
@@ -274,7 +275,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
 
-	  seg.setEpsAngle( 20.0f * (M_PI/180.0f) );
+	  seg.setEpsAngle( 15.0f * (M_PI/180.0f) );
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
@@ -304,16 +305,16 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
 	 // dbscan test 
 
-	  //cout << "Starting PCL euclidian clustering.. ";
-	  //tt.tic();
+	  cout << "Clustering (" << cloud->points.size() << ")...";
+	  tt.tic();
 
-	  /* Creating the KdTree object for the search method of the extraction
+	   //Creating the KdTree object for the search method of the extraction
 	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 	  tree->setInputCloud (cloud_filtered);
 	  std::vector<pcl::PointIndices> cluster_indices;
 	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	  ec.setClusterTolerance (0.50); // 0.02 = 2cm
-	  ec.setMinClusterSize (30);float c_buff [200];
+	  ec.setClusterTolerance (0.7); // 0.02 = 2cm
+	  ec.setMinClusterSize (30);
 	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
 	  ec.setSearchMethod (tree);
 	  ec.setInputCloud (cloud_filtered);
@@ -348,7 +349,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	    cloud_cluster->points.clear();
 	  }
 
-	  std::cout << "Found: " << j << " clusters." << endl;*/
+	  cout << "Done in " << tt.toc() << " ms.\t";
+	  std::cout << j << " clusters." << endl;
 	  //=========================================================================================================
 	  //             DBSCAN
 	  //=========================================================================================================
@@ -356,7 +358,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  
 
 	  
-
+	  /*
 	int num_threads = 4;
 	int minPts = 30; // minimal amout of points in order to be considered a cluster
 	double eps = 0.5; // distance between points
@@ -387,7 +389,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	// Calculate boxes from all the clusters found
 	float c_buff [200];
 	int buffer_size = dbs.writeClusters_uf(c_buff);
-	
+	*/
 	
 	//Send back boxes of found clusters to master
 	int root = 0;

@@ -162,7 +162,7 @@ int main (int argc, char** argv)
 	  // Create the segmentation object for the planar model and set all the parameters
 
   	  tt.tic();
-  	  cout << "Starting to clustering.... ";
+  	  cout << "Clustering.... ";
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
 
@@ -240,8 +240,8 @@ int main (int argc, char** argv)
 	  }
 
 
-	  cout << "Done in " << tt.toc() << " ms." << endl;
-	  std::cout << "found: " << j << " clusters." << endl;
+	  cout << "Done in " << tt.toc() << " ms.\t";
+	  cout << j << " clusters." << endl;
 
 	  cloud_filtered->points.clear();
 	  cloud_f->points.clear();
