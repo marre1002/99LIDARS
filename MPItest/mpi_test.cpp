@@ -57,7 +57,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
     tt.tic();
 
-	std::string infile = "../../PCDdataFiles/002.bin";
+	std::string infile = "../../BinAndTxt/0000000021.bin";
 
 	// load point cloud
 	fstream input(infile.c_str(), ios::in | ios::binary);
