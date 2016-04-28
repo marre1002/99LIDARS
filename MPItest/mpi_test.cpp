@@ -307,7 +307,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  //cout << "Starting PCL euclidian clustering.. ";
 	  //tt.tic();
 
-	  /*  // Creating the KdTree object for the search method of the extraction
+	  // Creating the KdTree object for the search method of the extraction
 	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 	  tree->setInputCloud (cloud_filtered);
 	  std::vector<pcl::PointIndices> cluster_indices;
@@ -318,10 +318,42 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  ec.setSearchMethod (tree);
 	  ec.setInputCloud (cloud_filtered);
 	  ec.extract (cluster_indices);
-	  cout << "done in: " << tt.toc() << " ms." << endl; */
+	  
+	  float c_buff [200];
+	  int j, nn = 0;
+	  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+	  {
+	    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
+	    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit){
+	      cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
+	      cloud_cluster->width = cloud_cluster->points.size ();
+	      cloud_cluster->height = 1;
+	      cloud_cluster->is_dense = true;
+	  }
+	    
+	    
+	    pcl::PointXYZ minPt, maxPt;
+ 		pcl::getMinMax3D (*cloud_cluster, minPt, maxPt);
+
+ 		c_buff[nn++] = minPt.x;
+ 		c_buff[nn++] = minPt.y;
+ 		c_buff[nn++] = minPt.z;
+ 		c_buff[nn++] = minPt.x;
+ 		c_buff[nn++] = minPt.y;
+ 		c_buff[nn++] = minPt.z;
+
+	    
+	    j++;
+	    cloud_cluster->points.clear();
+	  }
+
+	  std::cout << "Found: " << j << " clusters." << endl;
+
 	  
 
-	int num_threads = 4;
+	  
+
+	/*int num_threads = 4;
 	int minPts = 30; // minimal amout of points in order to be considered a cluster
 	double eps = 0.5; // distance between points
 
@@ -351,11 +383,12 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	// Calculate boxes from all the clusters found
 	float c_buff [200];
 	int buffer_size = dbs.writeClusters_uf(c_buff);
-
+	*/
 	
 	//Send back boxes of found clusters to master
 	int root = 0;
-	 MPI_Send(&c_buff, buffer_size, MPI_FLOAT, root, 0, MPI_COMM_WORLD);
+	//MPI_Send(&c_buff, buffer_size, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
+	MPI_Send(&c_buff, nn  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian
 
 	}
 
