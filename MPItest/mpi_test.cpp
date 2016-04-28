@@ -307,13 +307,13 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  //cout << "Starting PCL euclidian clustering.. ";
 	  //tt.tic();
 
-	  // Creating the KdTree object for the search method of the extraction
+	  /* Creating the KdTree object for the search method of the extraction
 	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 	  tree->setInputCloud (cloud_filtered);
 	  std::vector<pcl::PointIndices> cluster_indices;
 	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
 	  ec.setClusterTolerance (0.50); // 0.02 = 2cm
-	  ec.setMinClusterSize (30);
+	  ec.setMinClusterSize (30);float c_buff [200];
 	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
 	  ec.setSearchMethod (tree);
 	  ec.setInputCloud (cloud_filtered);
@@ -348,13 +348,16 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	    cloud_cluster->points.clear();
 	  }
 
-	  std::cout << "Found: " << j << " clusters." << endl;
+	  std::cout << "Found: " << j << " clusters." << endl;*/
+	  //=========================================================================================================
+	  //             DBSCAN
+	  //=========================================================================================================
 
 	  
 
 	  
 
-	/*int num_threads = 4;
+	int num_threads = 4;
 	int minPts = 30; // minimal amout of points in order to be considered a cluster
 	double eps = 0.5; // distance between points
 
@@ -373,7 +376,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	// build kdtree for the points
 	start = omp_get_wtime();
 	dbs.build_kdtree();
-	//cout << "Build kdtree took " << omp_get_wtime() - start << " seconds." << endl;
+	//cout << "Build kdtree took " float c_buff [200];<< omp_get_wtime() - start << " seconds." << endl;
 
 	start = omp_get_wtime();
 	//run_dbscan_algo(dbs);
@@ -384,7 +387,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	// Calculate boxes from all the clusters found
 	float c_buff [200];
 	int buffer_size = dbs.writeClusters_uf(c_buff);
-	*/
+	
 	
 	//Send back boxes of found clusters to master
 	int root = 0;

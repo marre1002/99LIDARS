@@ -19,6 +19,8 @@
 #include <vector>
 #include <pcl/console/parse.h>
 #include <sstream>
+#include <fstream>
+#include <iostream>
 
 int main (int argc, char** argv)
 {
@@ -32,6 +34,9 @@ int main (int argc, char** argv)
   	// Run with -v to start the visualizer. Default is without
   	visualization = true;
   }
+  pcl::console::TicToc tt;
+
+  tt.tic();
   // Read in the cloud data
   pcl::PCDReader reader;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -40,17 +45,30 @@ int main (int argc, char** argv)
 
   std::vector<pcl::PointXYZ> points;
 
-  reader.read ("../../PCDdataFiles/data02.pcd", *cloud);
-  std::cout << "PointCloud before filtering has: " << cloud->points.size () << " data points." << std::endl; //*
+ std::string infile = "../../BinAndTxt/0000000013.bin";
 
-  // Timer object
-  pcl::console::TicToc tt;
+	// load point cloud
+	fstream input(infile.c_str(), ios::in | ios::binary);
+	if(!input.good()){
+		cerr << "Could not read file: " << infile << endl;
+		exit(EXIT_FAILURE);
+	}
+	input.seekg(0, ios::beg);
 
+	//pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
 
-  tt.tic();
+	float ignore;
+	int i;
+	for (i=0; input.good() && !input.eof(); i++) {
+		pcl::PointXYZ point;
+		input.read((char *) &point.x, 3*sizeof(float));
+		input.read((char *) &ignore, sizeof(float));
+		if(i%3 == 0)cloud->points.push_back(point);
+	}
+	input.close();
 
+	cout << "Read KTTI point cloud with " << (i/3) << " points in " << tt.toc() << " ms." << endl;
 
-  pcl::PointCloud<pcl::PointXYZ> cloud_yo;
 
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 (new pcl::PointCloud<pcl::PointXYZ>);
@@ -121,7 +139,7 @@ int main (int argc, char** argv)
   std::cout << "All sectors:" << total_points << " points" << endl;
 
   
-  std::cout << "Splitting data in: " << tt.toc() << " ms." << endl;
+  //std::cout << "Splitting data in: " << tt.toc() << " ms." << endl;
 
   // Create the pass through filtering object
   // COMMENT BELOW SEGMENT TO REMOVE PASSTHROUGH FILTERING
@@ -142,7 +160,9 @@ int main (int argc, char** argv)
 	  //std::cout << "PointCloud after filtering has: " << cloud0->points.size ()  << " data points." << std::endl; 
 	  
 	  // Create the segmentation object for the planar model and set all the parameters
-	  std::cerr << "Starting Planar Segmentation\n",tt.tic ();
+
+  	  tt.tic();
+  	  cout << "Starting to clustering.... ";
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
 
@@ -152,13 +172,13 @@ int main (int argc, char** argv)
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
 	  pcl::PCDWriter writer;
-	  seg.setEpsAngle( 20.0f * (M_PI/180.0f) ); // Perfect value! 
+	  seg.setEpsAngle( 15.0f * (M_PI/180.0f) ); // Perfect value! 
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
-	  seg.setDistanceThreshold (0.25); // 0.3
+	  seg.setDistanceThreshold (0.3); // 0.3
 	  seg.setInputCloud (v.at(ii));
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
@@ -173,18 +193,17 @@ int main (int argc, char** argv)
 	  extract.setNegative (true);
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
-	  std::cerr << ">> Planar Segmentation Done: " << tt.toc () << " ms\n";
 
 	 
 	  
-	  tt.tic ();
+	  
 	  // Creating the KdTree object for the search method of the extraction
 	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 	  tree->setInputCloud (cloud_filtered);
 	  std::vector<pcl::PointIndices> cluster_indices;
 	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	  ec.setClusterTolerance (0.50); // 0.02 = 2cm
-	  ec.setMinClusterSize (30);
+	  ec.setClusterTolerance (0.7); // 0.02 = 2cm
+	  ec.setMinClusterSize (10);
 	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
 	  ec.setSearchMethod (tree);
 	  ec.setInputCloud (cloud_filtered);
@@ -220,8 +239,9 @@ int main (int argc, char** argv)
 	    cloud_cluster->points.clear();
 	  }
 
+
+	  cout << "Done in " << tt.toc() << " ms." << endl;
 	  std::cout << "found: " << j << " clusters." << endl;
-	  std::cerr << ">> Clustering Done: " << tt.toc () << " ms\n";
 
 	  cloud_filtered->points.clear();
 	  cloud_f->points.clear();
@@ -243,31 +263,36 @@ int main (int argc, char** argv)
 	  viewer->addCoordinateSystem (1.0);
 	  viewer->initCameraParameters ();
 
-
-/*        std::stringstream ss;
+        std::stringstream ss;
+        int counts = 0;
 	   for(int h = 0 ; h < points.size(); h++)
 	   {
   		    if(h%2 == 0)
   		    {
   		    	ss << "id" << h << "test";
     			std::string str = ss.str();
-  		    	pcl::PointXYZ a,b;
+  		    	pcl::PointXYZ a,b, middle;
   		    	a = points.at(h);
   		    	b = points.at(h+1);
   		    	viewer->addCube(a.x, b.x, a.y, b.y, a.z, b.z, 1.0,0.0,0.0, str ,0);
+  		    	ss.str("");
+    			ss << counts;
+    			middle = pcl::PointXYZ(((a.x+b.x)/2),((a.y+b.y)/2),((a.z+b.z)/2));
+    			viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
+    			counts++;
   			}
- 	   }	*/
+ 	   }
 	  //------------------------------------------------------------------------------------------------------------
 
 	  int z = -1.5;
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,0,z),1.0f,0.0f,0.0f, "aline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,55,z),1.0f,0.0f,0.0f, "bline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,0,z),1.0f,0.0f,0.0f, "cline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-55,z),1.0f,0.0f,0.0f, "dline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,55,z),1.0f,0.0f,0.0f, "eline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,55,z),1.0f,0.0f,0.0f, "fline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,-55,z),1.0f,0.0f,0.0f, "gline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,-55,z),1.0f,0.0f,0.0f, "hline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,0,z),0.0f,1.0f,0.0f, "aline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,55,z),0.0f,1.0f,0.0f, "bline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,0,z),0.0f,1.0f,0.0f, "cline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-55,z),0.0f,1.0f,0.0f, "dline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,55,z),0.0f,1.0f,0.0f, "eline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,55,z),0.0f,1.0f,0.0f, "fline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,-55,z),0.0f,1.0f,0.0f, "gline");
+	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,-55,z),0.0f,1.0f,0.0f, "hline");
 
 	   std::cout << "Found a total of: " << clusters << " clusters." << endl;
 
