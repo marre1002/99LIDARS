@@ -320,7 +320,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  ec.extract (cluster_indices);
 	  
 	  float c_buff [200];
-	  int j, nn = 0;
+	  int nn = 0;
+	  int j = 0;
 	  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
 	  {
 	    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
