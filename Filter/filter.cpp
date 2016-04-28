@@ -63,7 +63,7 @@ int main (int argc, char** argv)
 		pcl::PointXYZ point;
 		input.read((char *) &point.x, 3*sizeof(float));
 		input.read((char *) &ignore, sizeof(float));
-		if(i%3 == 0)cloud->points.push_back(point);
+		if(i%5 == 0)cloud->points.push_back(point);
 	}
 	input.close();
 
@@ -91,10 +91,10 @@ int main (int argc, char** argv)
   v.push_back(cloud7);
 
   // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
-  int nth_point = 3;
+  //int nth_point = 3;
   double zero = 0.0000000;
   for (int iii = 0; iii < static_cast<int> (cloud->size ()); ++iii){ 
-    if((iii%nth_point) == 0){
+   // if((iii%nth_point) == 0){
     	if(cloud->points[iii].x > zero){
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > cloud->points[iii].x){
@@ -124,9 +124,9 @@ int main (int argc, char** argv)
 	                  }
 	          }
 	      }
-    }else{
+    //}else{
     	//Ignore this point
-    }
+    //}
   }
 
   //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
@@ -178,7 +178,7 @@ int main (int argc, char** argv)
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
-	  seg.setDistanceThreshold (0.3); // 0.3
+	  seg.setDistanceThreshold (0.2); // 0.3
 	  seg.setInputCloud (v.at(ii));
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud

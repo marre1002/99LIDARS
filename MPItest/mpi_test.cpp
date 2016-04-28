@@ -57,7 +57,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 
     tt.tic();
 
-	std::string infile = "../../BinAndTxt/0000000021.bin";
+	std::string infile = "../../BinAndTxt/0000000013.bin";
 
 	// load point cloud
 	fstream input(infile.c_str(), ios::in | ios::binary);
@@ -75,7 +75,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 		PointXYZ point;
 		input.read((char *) &point.x, 3*sizeof(float));
 		input.read((char *) &ignore, sizeof(float));
-		if(i%3 == 0)cloud->push_back(point);
+		if(i%5 == 0)cloud->push_back(point);
 	}
 	input.close();
 
@@ -281,7 +281,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
-	  seg.setDistanceThreshold (0.25);
+	  seg.setDistanceThreshold (0.2);
 	  seg.setInputCloud (cloud);
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
@@ -314,7 +314,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	  std::vector<pcl::PointIndices> cluster_indices;
 	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
 	  ec.setClusterTolerance (0.7); // 0.02 = 2cm
-	  ec.setMinClusterSize (30);
+	  ec.setMinClusterSize (10);
 	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
 	  ec.setSearchMethod (tree);
 	  ec.setInputCloud (cloud_filtered);
