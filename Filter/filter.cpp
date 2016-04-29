@@ -26,6 +26,7 @@ int main (int argc, char** argv)
 {
 
   bool visualization = false;
+  bool lines = false;
   // --------------------------------------
   // -----Parse Command Line Arguments-----
   // --------------------------------------
@@ -33,6 +34,10 @@ int main (int argc, char** argv)
   {
   	// Run with -v to start the visualizer. Default is without
   	visualization = true;
+  }
+  if(pcl::console::find_argument(argc,argv, "-l") >= 0)
+  {
+  	lines = true;
   }
   pcl::console::TicToc tt;
 
@@ -67,7 +72,7 @@ int main (int argc, char** argv)
 	}
 	input.close();
 
-	cout << "Read KTTI point cloud with " << (i/3) << " points in " << tt.toc() << " ms." << endl;
+	cout << "Read KTTI point cloud with " << (i/5) << " points in " << tt.toc() << " ms." << endl;
 
 
 
@@ -227,15 +232,7 @@ int main (int argc, char** argv)
  		pcl::getMinMax3D (*cloud_cluster, minPt, maxPt);
  		points.push_back(minPt);
  		points.push_back(maxPt);
-	    
-	    //viewer->addText3D ("Yoda" +j, position_OBB, 1.0, 1.0, 1.0,1.0, "id" + j ,0);
-	    //viewer->addText3D ("ID:"+j, position_OBB, 1.0, 1.0, 1.0, 1.0);
-	    
-	    //std::cout << "PointCloud representing the Cluster: " << cloud_cluster->points.size () << " data points." << std::endl;
-	    //std::stringstream ss;
-	    //ss << "cloud_cluster_" << j << ".pcd";
-	    //writer.write<pcl::PointXYZ> (ss.str (), *cloud_cluster, false);*/ 
-	    j++;
+ 		j++;
 	    cloud_cluster->points.clear();
 	  }
 
@@ -263,6 +260,7 @@ int main (int argc, char** argv)
 	  viewer->addCoordinateSystem (1.0);
 	  viewer->initCameraParameters ();
 
+	  	// Draw boxes around clusters and give then id
         std::stringstream ss;
         int counts = 0;
 	   for(int h = 0 ; h < points.size(); h++)
@@ -284,15 +282,17 @@ int main (int argc, char** argv)
  	   }
 	  //------------------------------------------------------------------------------------------------------------
 
-	  int z = -1.5;
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,0,z),0.0f,1.0f,0.0f, "aline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,55,z),0.0f,1.0f,0.0f, "bline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,0,z),0.0f,1.0f,0.0f, "cline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-55,z),0.0f,1.0f,0.0f, "dline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,55,z),0.0f,1.0f,0.0f, "eline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,55,z),0.0f,1.0f,0.0f, "fline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,-55,z),0.0f,1.0f,0.0f, "gline");
-	  viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,-55,z),0.0f,1.0f,0.0f, "hline");
+	  if(lines){
+	  	int z = -1.9;
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,0,z),0.0f,8.0f,0.0f, "aline");
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,55,z),0.0f,8.0f,0.0f, "bline");
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,0,z),0.0f,8.0f,0.0f, "cline");
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-55,z),0.0f,8.0f,0.0f, "dline");
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,55,z),0.0f,8.0f,0.0f, "eline");
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,55,z),0.0f,8.0f,0.0f, "fline");
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,-55,z),0.0f,8.0f,0.0f, "gline");
+	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,-55,z),0.0f,8.0f,0.0f, "hline");
+	  }
 
 	   std::cout << "Found a total of: " << clusters << " clusters." << endl;
 
