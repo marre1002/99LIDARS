@@ -50,7 +50,7 @@ int main (int argc, char** argv)
 
   std::vector<pcl::PointXYZ> points;
 
- std::string infile = "../../BinAndTxt/0000000013.bin";
+ std::string infile = "../../BinAndTxt/0000000021.bin";
 
 	// load point cloud
 	fstream input(infile.c_str(), ios::in | ios::binary);
