@@ -14,8 +14,11 @@ if(OPENMP_FOUND)
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+include_directories(${dbscan})
+link_directories(${dbscan})
+
+add_executable(filter filter.cpp dbscan/clusters.cpp dbscan/clusters.h dbscan/dbscan.cpp dbscan/dbscan.h dbscan/kdtree2.cpp dbscan/kdtree2.hpp dbscan/utils.cpp dbscan/utils.h)
+
 include_directories(${include})
 link_directories(${include})
-
-add_executable (filter filter.cpp include/util.h)
 target_link_libraries (filter ${PCL_LIBRARIES})

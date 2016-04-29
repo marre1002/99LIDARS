@@ -22,11 +22,19 @@
 #include <fstream>
 #include <iostream>
 
+//************************************
+// 			DBSCAN includes
+#include "dbscan/dbscan.h"
+#include "dbscan/utils.h"
+#include "dbscan/kdtree2.hpp"
+//************************************
+
 int main (int argc, char** argv)
 {
 
   bool visualization = false;
   bool lines = false;
+  bool dbscan = false;
   // --------------------------------------
   // -----Parse Command Line Arguments-----
   // --------------------------------------
@@ -39,6 +47,10 @@ int main (int argc, char** argv)
   {
   	lines = true;
   }
+   if(pcl::console::find_argument(argc,argv, "-d") >= 0)
+  {
+  	dbscan = true;
+  }
   pcl::console::TicToc tt;
 
   tt.tic();
@@ -50,7 +62,7 @@ int main (int argc, char** argv)
 
   std::vector<pcl::PointXYZ> points;
 
- std::string infile = "../../BinAndTxt/0000000021.bin";
+ std::string infile = "../../BinAndTxt/0000000001.bin";
 
 	// load point cloud
 	fstream input(infile.c_str(), ios::in | ios::binary);
@@ -136,6 +148,7 @@ int main (int argc, char** argv)
 
   //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
 
+
   int total_points = 0;
   for(int k = 0 ; k < v.size(); k++){
   	total_points += v.at(k)->points.size();
@@ -143,28 +156,14 @@ int main (int argc, char** argv)
   }
   std::cout << "All sectors:" << total_points << " points" << endl;
 
-  
-  //std::cout << "Splitting data in: " << tt.toc() << " ms." << endl;
-
-  // Create the pass through filtering object
-  // COMMENT BELOW SEGMENT TO REMOVE PASSTHROUGH FILTERING
-
   int clusters = 0;
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_voxel(new pcl::PointCloud<pcl::PointXYZ>);
-
+  if(!dbscan){
+  	cout << "Clustering using Euclidian (single thread)" << endl;
+  }else{
+  	cout << "Clustering using DBSCAN (4 threads)" << endl;
+  }
+  std::vector<pcl::PointXYZ> cluster_vector;
   for(int ii = 0 ; ii < v.size(); ii++){
-  
-	  //std::cerr << "Starting VoxelGrid downsampling\n",tt.tic ();
-	  // Create the filtering object: downsample the dataset using a leaf size of 7cm
-	  //pcl::VoxelGrid<pcl::PointXYZ> vg;
-	  //vg.setInputCloud (v.at(ii));
-	  //vg.setLeafSize (0.07f, 0.07f, 0.07f);
-	  //vg.filter (*cloud_voxel);
-	  //std::cerr << ">> Done: " << tt.toc () << " ms\n";
-	  //std::cout << "PointCloud after filtering has: " << cloud0->points.size ()  << " data points." << std::endl; 
-	  
-	  // Create the segmentation object for the planar model and set all the parameters
 
   	  tt.tic();
   	  cout << "Clustering.... ";
@@ -198,51 +197,83 @@ int main (int argc, char** argv)
 	  extract.setNegative (true);
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
-
-	 
 	  
-	  
-	  // Creating the KdTree object for the search method of the extraction
-	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
-	  tree->setInputCloud (cloud_filtered);
-	  std::vector<pcl::PointIndices> cluster_indices;
-	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	  ec.setClusterTolerance (0.7); // 0.02 = 2cm
-	  ec.setMinClusterSize (10);
-	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
-	  ec.setSearchMethod (tree);
-	  ec.setInputCloud (cloud_filtered);
-	  ec.extract (cluster_indices);
-	  
-	  
+	  if(!dbscan){
+		  // Creating the KdTree object for the search method of the extraction
+		  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+		  tree->setInputCloud (cloud_filtered);
+		  std::vector<pcl::PointIndices> cluster_indices;
+		  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+		  ec.setClusterTolerance (0.6); // 0.02 = 2cm
+		  ec.setMinClusterSize (10);
+		  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
+		  ec.setSearchMethod (tree);
+		  ec.setInputCloud (cloud_filtered);
+		  ec.extract (cluster_indices);
+		  
 
-	  int j = 0;
-	  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-	  {
-	    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
-	    clusters++;
-	    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
-	      cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-	      cloud_cluster->width = cloud_cluster->points.size ();
-	      cloud_cluster->height = 1;
-	      cloud_cluster->is_dense = true;
-	    
-	    
-	    pcl::PointXYZ minPt, maxPt;
- 		pcl::getMinMax3D (*cloud_cluster, minPt, maxPt);
- 		points.push_back(minPt);
- 		points.push_back(maxPt);
- 		j++;
-	    cloud_cluster->points.clear();
-	  }
+		  int j = 0;
+		  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
+		  {
+		    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
+		    clusters++;
+		    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
+		      cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
+		      cloud_cluster->width = cloud_cluster->points.size ();
+		      cloud_cluster->height = 1;
+		      cloud_cluster->is_dense = true;
+		    
+		    
+		    pcl::PointXYZ minPt, maxPt;
+	 		pcl::getMinMax3D (*cloud_cluster, minPt, maxPt);
+	 		points.push_back(minPt);
+	 		points.push_back(maxPt);
+	 		j++;
+		    cloud_cluster->points.clear();
+		  }
 
 
-	  cout << "Done in " << tt.toc() << " ms.\t";
-	  cout << j << " clusters." << endl;
+		  cout << "Done in " << tt.toc() << " ms.\t";
+		  cout << j << " clusters." << endl;
 
-	  cloud_filtered->points.clear();
-	  cloud_f->points.clear();
-	  cloud_voxel->points.clear();
+		  cloud_filtered->points.clear();
+		  cloud_f->points.clear();
+		}else{ // DBSCAN CODE
+
+			tt.tic();
+			int num_threads = 4;
+			int minPts = 30; // minimal amout of points in order to be considered a cluster
+			double eps = 0.6; // distance between points
+
+
+			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
+
+			NWUClustering::ClusteringAlgo dbs;
+			dbs.set_dbscan_params(eps, minPts);
+
+			double start = omp_get_wtime();
+			//cout << "DBSCAN reading points.."<< endl;
+			dbs.read_cloud(cloud_filtered);	
+
+			//cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
+
+			// build kdtree for the points
+			start = omp_get_wtime();
+			dbs.build_kdtree();
+			//cout << "Build kdtree took " float c_buff [200];<< omp_get_wtime() - start << " seconds." << endl;
+
+			start = omp_get_wtime();
+			//run_dbscan_algo(dbs);
+			run_dbscan_algo_uf(dbs);
+			//cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
+
+
+			// Calculate boxes from all the clusters found
+			dbs.writeClusters_uf(&cluster_vector);
+
+			cout << "Done in " << tt.toc() << " ms." << endl;
+		  	//cout << (buffer_size/6) << " clusters." << endl;
+		}
   }
 
   if(visualization){
@@ -260,9 +291,10 @@ int main (int argc, char** argv)
 	  viewer->addCoordinateSystem (1.0);
 	  viewer->initCameraParameters ();
 
+	  std::stringstream ss;
+	  int counts = 0;
+	  if(!dbscan){
 	  	// Draw boxes around clusters and give then id
-        std::stringstream ss;
-        int counts = 0;
 	   for(int h = 0 ; h < points.size(); h++)
 	   {
   		    if(h%2 == 0)
@@ -281,6 +313,25 @@ int main (int argc, char** argv)
   			}
  	   }
 	  //------------------------------------------------------------------------------------------------------------
+ 		}else{
+ 			 for(int h = 0 ; h < cluster_vector.size(); h++)
+			   {
+		  		    if(h%2 == 0)
+		  		    {
+		  		    	ss << "id" << h << "test";
+		    			std::string str = ss.str();
+		  		    	pcl::PointXYZ a,b, middle;
+		  		    	a = cluster_vector.at(h);
+		  		    	b = cluster_vector.at(h+1);
+		  		    	viewer->addCube(a.x, b.x, a.y, b.y, a.z, b.z, 1.0,0.0,0.0, str ,0);
+		  		    	ss.str("");
+		    			ss << counts;
+		    			middle = pcl::PointXYZ(((a.x+b.x)/2),((a.y+b.y)/2),((a.z+b.z)/2));
+		    			viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
+		    			counts++;
+		  			}
+		 	   }
+ 		}
 
 	  if(lines){
 	  	int z = -1.9;
