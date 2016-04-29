@@ -399,6 +399,8 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	}
 
 	  //cout << "worker1 done!" << endl;
+}else{
+	cout << endl << "HELLO FROM WORKER2" << endl;
 }
 
 
