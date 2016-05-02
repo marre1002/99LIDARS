@@ -291,9 +291,16 @@ int main (int argc, char** argv)
 			// Calculate boxes from all the clusters found
 			dbs.writeClusters_uf(&cluster_vector);
 
+			int num_cl = 0;
+			for (int i = 0; i < cluster_vector.size(); ++i)
+			{
+				if(i%2 == 0) num_cl++; // Vecotr contains min and max points, two points for one cluster
+			}
+			clusters = clusters + num_cl;
 			int exe_time = tt.toc();
-			cout << "Done in " << exe_time << " ms." << endl;
+			cout << "Done in " << exe_time << " ms. " << "\t Found " << num_cl << " clusters."<< endl;
 			times.push_back(exe_time);
+			cluster_vector.clear();
 		  	//cout << (buffer_size/6) << " clusters." << endl;
 		}
   }
