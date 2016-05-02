@@ -41,6 +41,34 @@ static int numprocs;
 
 int main(int argc, char **argv) {
 int my_rank = 0;
+
+ bool dbscan = false;
+ int nth_point = 5; // five is default
+ double eps = 0.6; // epsilon for clustering default 0.6 for the
+ int minCl = 30;
+
+  // --------------------------------------
+  // -----Parse Command Line Arguments-----
+  // --------------------------------------
+
+  for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
+                                          * Note that we're starting on 1 because we don't need to know the 
+                                          * path of the program, which is stored in argv[0] */
+            if (i + 1 != argc) // Check that we haven't finished parsing already
+                if(std::strcmp(argv[i], "-d") == 0) {
+                    dbscan = true;
+                } else if(std::strcmp(argv[i], "-n") == 0){
+ 					//nth_point = atoi(argv[i+1]);
+ 					sscanf(argv[i+1], "%i", &nth_point);
+				} else if(std::strcmp(argv[i], "-e") == 0){
+					eps = atof(argv[i+1]);
+				} else if(std::strcmp(argv[i], "-m") == 0){
+					minCl = atoi(argv[i+1]);                   
+            }
+            std::cout << argv[i] << " ";
+        }
+
+  cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
 // MPI initializations
 MPI_Status status;
 MPI_Init (&argc, &argv);
@@ -55,9 +83,7 @@ if(my_rank == 0){ // I'm master and handle the splitting
   // Timer object
   pcl::console::TicToc tt;
 
-    tt.tic();
-
-	std::string infile = "../../BinAndTxt/0000000013.bin";
+	std::string infile = "../../BinAndTxt/0000000001.bin";
 
 	// load point cloud
 	fstream input(infile.c_str(), ios::in | ios::binary);
@@ -67,25 +93,27 @@ if(my_rank == 0){ // I'm master and handle the splitting
 	}
 	input.seekg(0, ios::beg);
 
-	pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
+	//pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
 
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+	
 	float ignore;
 	int i;
 	for (i=0; input.good() && !input.eof(); i++) {
-		PointXYZ point;
+		pcl::PointXYZ point;
 		input.read((char *) &point.x, 3*sizeof(float));
 		input.read((char *) &ignore, sizeof(float));
-		if(i%5 == 0)cloud->push_back(point);
+		if(i%nth_point == 0)cloud->points.push_back(point);
 	}
 	input.close();
 
-	cout << "Read KTTI point cloud with " << (i/3) << " points in " << tt.toc() << " ms." << endl;
+	float percent = ((float)(i/nth_point))/i;
 
+	cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
 
-  tt.tic();
 
   int m_tag = 0; // MPI message tag
-  int bufferLimit = 20000;
+  int bufferLimit = 200000;
   float aa [bufferLimit];
   float bb [bufferLimit];
   float cc [bufferLimit];
