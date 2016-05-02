@@ -48,7 +48,7 @@ int main (int argc, char** argv)
                                           * path of the program, which is stored in argv[0] */
             if (i + 1 != argc) // Check that we haven't finished parsing already
                 if(std::strcmp(argv[i], "-v") == 0) {
-             	visualization = true;
+             		visualization = true;
                 } else if(std::strcmp(argv[i], "-l") == 0) {
                     lines = true;
                 } else if(std::strcmp(argv[i], "-d") == 0) {
@@ -224,7 +224,7 @@ int main (int argc, char** argv)
 		  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
 		  ec.setClusterTolerance (eps); // 0.02 = 2cm
 		  ec.setMinClusterSize (minCl);
-		  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
+		  //ec.setMaxClusterSize (); // with voxel it should be aroud 5000
 		  ec.setSearchMethod (tree);
 		  ec.setInputCloud (cloud_filtered);
 		  ec.extract (cluster_indices);
@@ -298,7 +298,7 @@ int main (int argc, char** argv)
 			}
 			clusters = clusters + num_cl;
 			int exe_time = tt.toc();
-			cout << "Done in " << exe_time << " ms. " << "\t Found " << num_cl << " clusters."<< endl;
+			cout << "Done in " << exe_time << " ms." << "\t" << num_cl << " clusters."<< endl;
 			times.push_back(exe_time);
 			cluster_vector.clear();
 		  	//cout << (buffer_size/6) << " clusters." << endl;
