@@ -1,0 +1,5 @@
+#!/bin/sh
+
+OUTPUTF='output.txt'
+
+./Filter -n 1 -e 0.6 -m 30 > $OUTPUTF

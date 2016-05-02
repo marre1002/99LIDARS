@@ -35,25 +35,39 @@ int main (int argc, char** argv)
   bool visualization = false;
   bool lines = false;
   bool dbscan = false;
+  int nth_point = 5; // five is default
+  double eps = 0.6; // epsilon for clustering default 0.6 for the
+  int minCl = 30;
+
   // --------------------------------------
   // -----Parse Command Line Arguments-----
   // --------------------------------------
-  if(pcl::console::find_argument (argc, argv, "-v") >= 0)
-  {
-  	// Run with -v to start the visualizer. Default is without
-  	visualization = true;
-  }
-  if(pcl::console::find_argument(argc,argv, "-l") >= 0)
-  {
-  	lines = true;
-  }
-   if(pcl::console::find_argument(argc,argv, "-d") >= 0)
-  {
-  	dbscan = true;
-  }
+
+  for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
+                                          * Note that we're starting on 1 because we don't need to know the 
+                                          * path of the program, which is stored in argv[0] */
+            if (i + 1 != argc) // Check that we haven't finished parsing already
+                if(std::strcmp(argv[i], "-v") == 0) {
+             	visualization = true;
+                } else if(std::strcmp(argv[i], "-l") == 0) {
+                    lines = true;
+                } else if(std::strcmp(argv[i], "-d") == 0) {
+                    dbscan = true;
+                } else if(std::strcmp(argv[i], "-n") == 0){
+ 					//nth_point = atoi(argv[i+1]);
+ 					sscanf(argv[i+1], "%i", &nth_point);
+				} else if(std::strcmp(argv[i], "-e") == 0){
+					eps = atof(argv[i+1]);
+				} else if(std::strcmp(argv[i], "-m") == 0){
+					minCl = atoi(argv[i+1]);                   
+            }
+            std::cout << argv[i] << " ";
+        }
+
+  cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
+
   pcl::console::TicToc tt;
 
-  tt.tic();
   // Read in the cloud data
   pcl::PCDReader reader;
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -80,11 +94,13 @@ int main (int argc, char** argv)
 		pcl::PointXYZ point;
 		input.read((char *) &point.x, 3*sizeof(float));
 		input.read((char *) &ignore, sizeof(float));
-		if(i%5 == 0)cloud->points.push_back(point);
+		if(i%nth_point == 0)cloud->points.push_back(point);
 	}
 	input.close();
 
-	cout << "Read KTTI point cloud with " << (i/5) << " points in " << tt.toc() << " ms." << endl;
+	float percent = ((float)(i/nth_point))/i;
+
+	cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
 
 
 
@@ -149,12 +165,14 @@ int main (int argc, char** argv)
   //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
 
 
-  int total_points = 0;
+  /*int total_points = 0;
   for(int k = 0 ; k < v.size(); k++){
   	total_points += v.at(k)->points.size();
   	std::cout << "Sector " << k <<  " have: " << v.at(k)->points.size() << " points" << endl;	
   }
-  std::cout << "All sectors:" << total_points << " points" << endl;
+  std::cout << "All sectors:" << total_points << " points" << endl;*/
+
+  std::vector<int> times;
 
   int clusters = 0;
   if(!dbscan){
@@ -204,8 +222,8 @@ int main (int argc, char** argv)
 		  tree->setInputCloud (cloud_filtered);
 		  std::vector<pcl::PointIndices> cluster_indices;
 		  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-		  ec.setClusterTolerance (0.6); // 0.02 = 2cm
-		  ec.setMinClusterSize (10);
+		  ec.setClusterTolerance (eps); // 0.02 = 2cm
+		  ec.setMinClusterSize (minCl);
 		  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
 		  ec.setSearchMethod (tree);
 		  ec.setInputCloud (cloud_filtered);
@@ -233,8 +251,10 @@ int main (int argc, char** argv)
 		  }
 
 
-		  cout << "Done in " << tt.toc() << " ms.\t";
+		  int exe_time = tt.toc();
+		  cout << "Done in " << exe_time << " ms.\t";
 		  cout << j << " clusters." << endl;
+		  times.push_back(exe_time);
 
 		  cloud_filtered->points.clear();
 		  cloud_f->points.clear();
@@ -242,14 +262,14 @@ int main (int argc, char** argv)
 
 			tt.tic();
 			int num_threads = 4;
-			int minPts = 30; // minimal amout of points in order to be considered a cluster
-			double eps = 0.6; // distance between points
+			//int minPts = 30; // minimal amout of points in order to be considered a cluster
+			//double eps = 0.6; // distance between points
 
 
 			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
 
 			NWUClustering::ClusteringAlgo dbs;
-			dbs.set_dbscan_params(eps, minPts);
+			dbs.set_dbscan_params(eps, minCl);
 
 			double start = omp_get_wtime();
 			//cout << "DBSCAN reading points.."<< endl;
@@ -271,10 +291,20 @@ int main (int argc, char** argv)
 			// Calculate boxes from all the clusters found
 			dbs.writeClusters_uf(&cluster_vector);
 
-			cout << "Done in " << tt.toc() << " ms." << endl;
+			int exe_time = tt.toc();
+			cout << "Done in " << exe_time << " ms." << endl;
+			times.push_back(exe_time);
 		  	//cout << (buffer_size/6) << " clusters." << endl;
 		}
   }
+
+  int sum = 0;
+  for (int i = 0; i < times.size(); ++i)
+  {
+  	 sum = sum + times.at(i);
+  }
+  	double avg = (sum/8);
+  	cout << "All sectors: " << sum <<" ms, " << "===== Avg time: "<< avg << " ms ================" << endl;  
 
   if(visualization){
 	  // ----------------------------------------------------------------------------------------------------------
