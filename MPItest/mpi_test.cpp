@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 	  // Nth_point will be kept from the data e.g. 3, every third point will be used
 	  Filters filt;
 	  filt.read_file(infile, nth_point);
-	  filt.filter_and_slice(&floats);
+	  filt.filter_and_slice(floats);
 
 	  for (int i = 0; i < 7; ++i)
 	  {

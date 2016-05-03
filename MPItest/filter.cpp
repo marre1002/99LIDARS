@@ -36,53 +36,53 @@ int Filters::read_file(std::string infile, int nth_point)
 	return 0;		
 }
 
-int Filters::filter_and_slice(std::vector<std::vector<float> > *floats)
+int Filters::filter_and_slice(std::vector<std::vector<float> >& floats)
 {
-	
+	cout << "Start filtering!" << endl;
 	  double zero = 0.0000000;
 	  for (int iii = 0; iii < static_cast<int> (cloud.size()); ++iii){ 
     	if(cloud.points[iii].x > zero){
 	          if(cloud.points[iii].y > zero){
 	              if(cloud.points[iii].y > cloud.points[iii].x){
-	              	  floats->at(0).push_back(cloud.points[iii].x);
-	              	  floats->at(0).push_back(cloud.points[iii].y);
-	              	  floats->at(0).push_back(cloud.points[iii].z);
+	              	  floats.at(0).push_back(cloud.points[iii].x);
+	              	  floats.at(0).push_back(cloud.points[iii].y);
+	              	  floats.at(0).push_back(cloud.points[iii].z);
 	              }else{
-	                  floats->at(1).push_back(cloud.points[iii].x);
-	              	  floats->at(1).push_back(cloud.points[iii].y);
-	              	  floats->at(1).push_back(cloud.points[iii].z);
+	                  floats.at(1).push_back(cloud.points[iii].x);
+	              	  floats.at(1).push_back(cloud.points[iii].y);
+	              	  floats.at(1).push_back(cloud.points[iii].z);
 	              }
 	          }else{
 	              if((abs(cloud.points[iii].y)) > cloud.points[iii].x){
-	                  floats->at(2).push_back(cloud.points[iii].x);
-	              	  floats->at(2).push_back(cloud.points[iii].y);
-	              	  floats->at(2).push_back(cloud.points[iii].z);
+	                  floats.at(2).push_back(cloud.points[iii].x);
+	              	  floats.at(2).push_back(cloud.points[iii].y);
+	              	  floats.at(2).push_back(cloud.points[iii].z);
 	              }else{
-	                  floats->at(3).push_back(cloud.points[iii].x);
-	              	  floats->at(3).push_back(cloud.points[iii].y);
-	              	  floats->at(3).push_back(cloud.points[iii].z);
+	                  floats.at(3).push_back(cloud.points[iii].x);
+	              	  floats.at(3).push_back(cloud.points[iii].y);
+	              	  floats.at(3).push_back(cloud.points[iii].z);
 	              }
 	          }    
 	      }else{
 	          if(cloud.points[iii].y > zero){
 	              if(cloud.points[iii].y > (abs(cloud.points[iii].x))){
-	              	  floats->at(4).push_back(cloud.points[iii].x);
-	              	  floats->at(4).push_back(cloud.points[iii].y);
-	              	  floats->at(4).push_back(cloud.points[iii].z);
+	              	  floats.at(4).push_back(cloud.points[iii].x);
+	              	  floats.at(4).push_back(cloud.points[iii].y);
+	              	  floats.at(4).push_back(cloud.points[iii].z);
 	               }else{
-	                  floats->at(5).push_back(cloud.points[iii].x);
-	              	  floats->at(5).push_back(cloud.points[iii].y);
-	              	  floats->at(5).push_back(cloud.points[iii].z);
+	                  floats.at(5).push_back(cloud.points[iii].x);
+	              	  floats.at(5).push_back(cloud.points[iii].y);
+	              	  floats.at(5).push_back(cloud.points[iii].z);
 	               }
 	           }else{
 	               if(cloud.points[iii].y > cloud.points[iii].x){
-	                  floats->at(6).push_back(cloud.points[iii].x);
-	              	  floats->at(6).push_back(cloud.points[iii].y);
-	              	  floats->at(6).push_back(cloud.points[iii].z);
+	                  floats.at(6).push_back(cloud.points[iii].x);
+	              	  floats.at(6).push_back(cloud.points[iii].y);
+	              	  floats.at(6).push_back(cloud.points[iii].z);
 	                }else{
-	                  floats->at(7).push_back(cloud.points[iii].x);
-	              	  floats->at(7).push_back(cloud.points[iii].y);
-	              	  floats->at(7).push_back(cloud.points[iii].z);
+	                  floats.at(7).push_back(cloud.points[iii].x);
+	              	  floats.at(7).push_back(cloud.points[iii].y);
+	              	  floats.at(7).push_back(cloud.points[iii].z);
 	                }
 	          }
 	      }
