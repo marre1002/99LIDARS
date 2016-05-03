@@ -50,7 +50,7 @@ void *segmentation(void *threadarg)
 
 	//Send back boxes of found clusters to master
 	int root = 0;
-	MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
+	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
 	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian
 
     
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
 
 	// This needs to be done 8 times
 
-	// Distribute the data/sectors of point cloud 
+	
 	for(int i = 0; i < sectors ; i++){ 
 		int number_amount;
 		MPI_Status status;
