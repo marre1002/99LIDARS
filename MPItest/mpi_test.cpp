@@ -86,11 +86,6 @@ int main(int argc, char **argv) {
 	   MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
 	   float *f = &filt.floats.at(i)[0];
 	   MPI_Send(f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
-	   //int bsize = 3;
-	   //cout << "i: " << i << " bsize: " << bsize << " lenght: " << f->lenght << endl; 
-	   //MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
-	   //float* f = &filt.floats.at(i)[0];
-	   //MPI_Send(&buf, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
 	}
 
 
@@ -113,7 +108,7 @@ int main(int argc, char **argv) {
 		// Now receive the message with the allocated buffer
 		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);  
 		free(number_buf);
-		cout << "Master received values from " << status.MPI_SOURCE << endl; 
+		cout << "Master received " << number_amount << " values from " << status.MPI_SOURCE << endl; 
 	}
 
 	
@@ -134,8 +129,8 @@ int main(int argc, char **argv) {
    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-   cout << "received values!" << endl;
-  /*
+   //cout << "received values!" << endl;
+  
  
  	Segmentation seg;
  	seg.build_cloud(buff, count);
@@ -145,12 +140,13 @@ int main(int argc, char **argv) {
  	float buffer[200];
  	double eps = 0.6;
  	int minCl = 30;
+ 	
  	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
 
 	//Send back boxes of found clusters to master
 	int root = 0;
 	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian */
+	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian 
 }
 //******************************************************************************************************
 // End MPI
