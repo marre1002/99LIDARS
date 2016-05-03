@@ -82,14 +82,15 @@ int main(int argc, char **argv) {
 
 	float buf[30] = {1.1,19.0,1.1};
 	for(int i = 0; i < sectors ; i++){ 
-	   //int bsize = filt.floats.at(i).size();
+	   int bsize = filt.floats.at(i).size();
+	   MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
+	   float *f = &filt.floats.at(i)[0];
+	   MPI_Send(f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
+	   //int bsize = 3;
+	   //cout << "i: " << i << " bsize: " << bsize << " lenght: " << f->lenght << endl; 
 	   //MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
 	   //float* f = &filt.floats.at(i)[0];
-	   //MPI_Send(&f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
-		int bsize = 3;
-	   MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
-	   //float* f = &filt.floats.at(i)[0];
-	   MPI_Send(&buf, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
+	   //MPI_Send(&buf, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
 	}
 
 
