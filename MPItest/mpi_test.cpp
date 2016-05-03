@@ -53,7 +53,8 @@ int main(int argc, char **argv) {
 ********************************************************************************************/
 	if(my_rank == 0){ 
 
-	  
+	  pcl::console::TicToc tt;
+	  tt.tic();	  
 	  //std::vector<std::vector<float> > floats;
 	  int m_tag = 0; // MPI message tag
 
@@ -67,7 +68,7 @@ int main(int argc, char **argv) {
 
 	  for (int i = 0; i < 8; ++i)
 	  {
-	  	cout << "Size of sector " << i << " is " << filt.floats.at(i).size() << endl;
+	  	//cout << "Size of sector " << i << " is " << filt.floats.at(i).size() << endl;
 	  }
 	  
 
@@ -87,15 +88,6 @@ int main(int argc, char **argv) {
 	   float *f = &filt.floats.at(i)[0];
 	   MPI_Send(f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
 	}
-
-
-	 // Read new file while waiting...
-	 
-	 // Receive all sectors from workers...
-
-	// This needs to be done 8 times
-
-
 	
 	for(int i = 0; i < sectors ; i++){ 
 		int number_amount;
@@ -110,6 +102,7 @@ int main(int argc, char **argv) {
 		free(number_buf);
 		cout << "Master received " << number_amount << " values from " << status.MPI_SOURCE << endl; 
 	}
+	cout << "Done in " << tt.toc() << " ms" << endl;
 
 	
 /********************************************************************************************************
@@ -124,10 +117,7 @@ int main(int argc, char **argv) {
    int count;
    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-   //cout << "received values!" << endl;
   
- 
  	Segmentation seg;
  	seg.build_cloud(buff, count);
 
