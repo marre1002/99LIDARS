@@ -1,442 +1,207 @@
-#include <pcl/ModelCoefficients.h>
-#include <pcl/point_types.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/filters/extract_indices.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/kdtree/kdtree.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/segmentation/extract_clusters.h>
 #include <pcl/console/time.h>
-#include <pcl/filters/passthrough.h>
 #include <string>
-
-#include <pcl/io/pcd_io.h>
-#include <pcl/common/point_operators.h>
-#include <pcl/common/io.h>
-
-#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/features/moment_of_inertia_estimation.h>
 #include <vector>
-#include <pcl/console/parse.h>
-
-#include <fstream>
 #include <sstream>
-#include <iostream>
 #include <mpi.h>
+#include <pthread.h>
 
-//************************************
-// 			DBSCAN includes
-#include "dbscan/dbscan.h"
-#include "dbscan/utils.h"
-#include "dbscan/kdtree2.hpp"
-//************************************
+#include "filter.h"
+#include "segmentation.h"
+
 
 using namespace pcl;
 using namespace std;
 
 static int numprocs;
 
-int main(int argc, char **argv) {
-int my_rank = 0;
+/* This struct gets passed on to every
+	worker thread created. */
+	struct thread_data{
+		int thread_id;
+	};
 
- bool dbscan = false;
- int nth_point = 5; // five is default
- double eps = 0.6; // epsilon for clustering default 0.6 for the
- int minCl = 30;
-
-  // --------------------------------------
-  // -----Parse Command Line Arguments-----
-  // --------------------------------------
-
-  for (int i = 1; i < argc; i++) { /* We will iterate over argv[] to get the parameters stored inside.
-                                          * Note that we're starting on 1 because we don't need to know the 
-                                          * path of the program, which is stored in argv[0] */
-            if (i + 1 != argc) // Check that we haven't finished parsing already
-                if(std::strcmp(argv[i], "-d") == 0) {
-                    dbscan = true;
-                } else if(std::strcmp(argv[i], "-n") == 0){
- 					//nth_point = atoi(argv[i+1]);
- 					sscanf(argv[i+1], "%i", &nth_point);
-				} else if(std::strcmp(argv[i], "-e") == 0){
-					eps = atof(argv[i+1]);
-				} else if(std::strcmp(argv[i], "-m") == 0){
-					minCl = atoi(argv[i+1]);                   
-            }
-            std::cout << argv[i] << " ";
-        }
-
-  cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
-// MPI initializations
-MPI_Status status;
-MPI_Init (&argc, &argv);
-MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
-MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
-
-//************************************************************************************************************
-
-
-if(my_rank == 0){ // I'm master and handle the splitting
-
-  // Timer object
-  pcl::console::TicToc tt;
-
-	std::string infile = "../../BinAndTxt/0000000001.bin";
-
-	// load point cloud
-	fstream input(infile.c_str(), ios::in | ios::binary);
-	if(!input.good()){
-		cerr << "Could not read file: " << infile << endl;
-		exit(EXIT_FAILURE);
-	}
-	input.seekg(0, ios::beg);
-
-	//pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
-
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-	
-	float ignore;
-	int i;
-	for (i=0; input.good() && !input.eof(); i++) {
-		pcl::PointXYZ point;
-		input.read((char *) &point.x, 3*sizeof(float));
-		input.read((char *) &ignore, sizeof(float));
-		if(i%nth_point == 0)cloud->points.push_back(point);
-	}
-	input.close();
-
-	float percent = ((float)(i/nth_point))/i;
-
-	cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
-
-
-  int m_tag = 0; // MPI message tag
-  int bufferLimit = 200000;
-  float aa [bufferLimit];
-  float bb [bufferLimit];
-  float cc [bufferLimit];
-  float dd [bufferLimit];
-  float ee [bufferLimit];
-  float ff [bufferLimit];
-  float gg [bufferLimit];
-  float hh [bufferLimit];
-  int count0,count1,count2,count3,count4,count5,count6,count7 = 0;
-  
-  double zero = 0.0000000;
-  for (int iii = 0; iii < static_cast<int> (cloud->size()); ++iii){ 
-    	if(cloud->points[iii].x > zero){
-	          if(cloud->points[iii].y > zero){
-	              if(cloud->points[iii].y > cloud->points[iii].x){
-	              	  aa[count0++] = cloud->points[iii].x;
-	              	  aa[count0++] = cloud->points[iii].y;
-	              	  aa[count0++] = cloud->points[iii].z;
-
-	              }else{
-	                  bb[count1++] = cloud->points[iii].x;
-	              	  bb[count1++] = cloud->points[iii].y;
-	              	  bb[count1++] = cloud->points[iii].z;
-	              }
-	          }else{
-	              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
-	                  cc[count2++] = cloud->points[iii].x;
-	              	  cc[count2++] = cloud->points[iii].y;
-	              	  cc[count2++] = cloud->points[iii].z;
-	              }else{
-	                  dd[count3++] = cloud->points[iii].x;
-	              	  dd[count3++] = cloud->points[iii].y;
-	              	  dd[count3++] = cloud->points[iii].z;
-	              }
-	          }    
-	      }else{
-	          if(cloud->points[iii].y > zero){
-	              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
-	              	  ee[count4++] = cloud->points[iii].x;
-	              	  ee[count4++] = cloud->points[iii].y;
-	              	  ee[count4++] = cloud->points[iii].z;
-	               }else{
-	                  ff[count5++] = cloud->points[iii].x;
-	              	  ff[count5++] = cloud->points[iii].y;
-	              	  ff[count5++] = cloud->points[iii].z;
-	               }
-	           }else{
-	               if(cloud->points[iii].y > cloud->points[iii].x){
-	                  gg[count6++] = cloud->points[iii].x;
-	              	  gg[count6++] = cloud->points[iii].y;
-	              	  gg[count6++] = cloud->points[iii].z;
-	                }else{
-	                  hh[count7++] = cloud->points[iii].x;
-	              	  hh[count7++] = cloud->points[iii].y;
-	              	  hh[count7++] = cloud->points[iii].z;
-	                }
-	          }
-	      }
-   
-  }
-
-
- //  cout << "Splitting data in: " << tt.toc() << " ms" << endl;
-   int loop;
-   for(loop = 0; loop < 8 ; loop++){
-	   tt.tic();
-	  // cout << "Sending " << loop << " sector for processing...  ";
-	   if(loop == 0){
-	   		MPI_Send(&count0, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&aa, count0, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}else if(loop == 1){
-	   		MPI_Send(&count1, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&bb, count1, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}else if(loop == 2){
-	   		MPI_Send(&count2, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&cc, count2, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}else if(loop == 3){
-	   		MPI_Send(&count3, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&dd, count3, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}else if(loop == 4){
-	   		MPI_Send(&count4, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&ee, count4, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}else if(loop == 5){
-	   		MPI_Send(&count5, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&ff, count5, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}else if(loop == 6){
-	   		MPI_Send(&count6, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&gg, count6, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}else{
-	   		MPI_Send(&count7, 1, MPI_INT, 1, m_tag, MPI_COMM_WORLD);
-	   		MPI_Send(&hh, count7, MPI_FLOAT, 1, m_tag, MPI_COMM_WORLD);
-	   	}
-
-	  // cout << "Sending data in: " << tt.toc() << " ms" << endl;
-
-	 //  cout << "Waiting to get data back..." << endl;
-
-	   //MPI_Recv(); // Receive data from the workers, sync problem?
-
-	    int number_amount;
-	    MPI_Status status;
-	    MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-	    MPI_Get_count(&status, MPI_FLOAT, &number_amount);
-
-	    // Allocate a buffer to hold the incoming numbers
-	    float* number_buf = (float*)malloc(sizeof(float) * number_amount);
-
-	    // Now receive the message with the allocated buffer
-	    MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-	  	//cout << "Node 0 (master) received " << number_amount << " from " << status.MPI_SOURCE << endl; 
-
-		 /* ofstream myfile ("clusters.txt");
-		  if (myfile.is_open())
-		  {
-		    
-		    for(int count = 0; count < number_amount; ++count){
-		        myfile << number_buf[count] << endl;
-		    }
-		    myfile.close();
-		    //cout << "Wrote clusters to clusters.txt" << endl;
-		  }
-		  else cout << "Unable to open file";*/
-
-		free(number_buf);
-
-		//cout << "Done in " << tt.toc() << " ms." << endl;
-
-	} // end for
-
-   /*int buf[32];
-   MPI_Status status;
-   // receive message from any source
-   MPI_recv(buf, 32, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-   int replybuf[];
-   // send reply back to sender of the message received above
-   MPI_send(buf, 32, MPI_INT, status.MPI_SOURCE, tag, MPI_COMM_WORLD);*/
-   
-
-}else if(my_rank == 1){ // Worker1 runs this code
-
+/**
+*	Thread function, handles the segmentation of one sector
+*/
+void *segmentation(void *threadarg)
+{
 	pcl::console::TicToc tt;
-	
-
-
 	tt.tic();
 
-	for(int t = 0;t < 8; t++){
+	struct thread_data *my_data;
+    
+    my_data = (struct thread_data *) threadarg;
 
-	int count;
-
-	//pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-
- 	float buff [20000];
- 
+    // Receive sector from master
+ 	int count;
+ 	float buff [50000]; 
     MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
  	MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
- 	pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
- 	//pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+ 	Segmentation seg;
+ 	seg.build_cloud(buff, count);
 
- 	int i;
-	for(i=0; i < count ; i=i+3) {
-		PointXYZ point;
-		point.x = buff[i];
-		point.y = buff[i+1];
+ 	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
 
-		point.z = buff[i+2];
-		cloud->push_back(point);
-	}
+ 	float buffer[200];
+ 	double eps = 0.6;
+ 	int minCl = 30;
+ 	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
 
- 	//cout << "------------ worker1 -------------------" << endl;
-	//cout << "Count is: " << count  << " count/3 = " << (count/3) << endl;
- 	//cout << "Received: " << cloud->points.size() << " points." << endl;
- 	//cout << "Time elapsed: " << tt.toc() << "ms" << endl;
-
- 	
-	  // Create the segmentation object for the planar model and set all the parameters
-	 // std::cerr << "Starting Planar Segmentation\n",tt.tic ();
-
-	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
-	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
-	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-	  pcl::SACSegmentation<pcl::PointXYZ> seg;
-	  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
-
-	  seg.setEpsAngle( 15.0f * (M_PI/180.0f) );
-	  seg.setAxis(axis);
-	  seg.setOptimizeCoefficients (true);
-	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
-	  seg.setMethodType (pcl::SAC_RANSAC);
-	  seg.setMaxIterations (100);
-	  seg.setDistanceThreshold (0.2);
-	  seg.setInputCloud (cloud);
-	  seg.segment (*inliers, *coefficients);
-	  // Extract the planar inliers from the input cloud
-	  pcl::ExtractIndices<pcl::PointXYZ> extract;
-	  extract.setInputCloud (cloud);
-	  extract.setIndices (inliers);
-	  extract.setNegative (false);
-	  // Get the points associated with the planar surface
-	  extract.filter (*cloud_plane);
-	  //std::cout << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
-	  // Remove the planar inliers, extract the rest
-	  extract.setNegative (true);
-	  extract.filter (*cloud_f);
-	  *cloud_filtered = *cloud_f;
-	  //cout << ">> Planar Segmentation Done: " << tt.toc () << " ms\n"; 
-
-	  
-	 //pcl::PCDWriter writer;
-     // Save DoN features
-     //writer.write<PointXYZ> ("slice_ran.pcd", *cloud_filtered, false);
-
-	 // dbscan test 
-
-	  cout << "Clustering (" << cloud->points.size() << ")...";
-	  tt.tic();
-
-	   //Creating the KdTree object for the search method of the extraction
-	  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
-	  tree->setInputCloud (cloud_filtered);
-	  std::vector<pcl::PointIndices> cluster_indices;
-	  pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	  ec.setClusterTolerance (0.7); // 0.02 = 2cm
-	  ec.setMinClusterSize (10);
-	  ec.setMaxClusterSize (3500); // with voxel it should be aroud 5000
-	  ec.setSearchMethod (tree);
-	  ec.setInputCloud (cloud_filtered);
-	  ec.extract (cluster_indices);
-	  
-	  float c_buff [200];
-	  int nn = 0;
-	  int j = 0;
-	  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-	  {
-	    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
-	    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit){
-	      cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
-	      cloud_cluster->width = cloud_cluster->points.size ();
-	      cloud_cluster->height = 1;
-	      cloud_cluster->is_dense = true;
-	  }
-	    
-	    
-	    pcl::PointXYZ minPt, maxPt;
- 		pcl::getMinMax3D (*cloud_cluster, minPt, maxPt);
-
- 		c_buff[nn++] = minPt.x;
- 		c_buff[nn++] = minPt.y;
- 		c_buff[nn++] = minPt.z;
- 		c_buff[nn++] = minPt.x;
- 		c_buff[nn++] = minPt.y;
- 		c_buff[nn++] = minPt.z;
-
-	    
-	    j++;
-	    cloud_cluster->points.clear();
-	  }
-
-	  cout << "Done in " << tt.toc() << " ms.\t";
-	  std::cout << j << " clusters." << endl;
-	  //=========================================================================================================
-	  //             DBSCAN
-	  //=========================================================================================================
-
-	  
-
-	  
-	  /*
-	int num_threads = 4;
-	int minPts = 30; // minimal amout of points in order to be considered a cluster
-	double eps = 0.5; // distance between points
-
-
-	omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
-
-	NWUClustering::ClusteringAlgo dbs;
-	dbs.set_dbscan_params(eps, minPts);
-
-	double start = omp_get_wtime();
-	//cout << "DBSCAN reading points.."<< endl;
-	dbs.read_cloud(cloud_filtered);	
-
-	//cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
-
-	// build kdtree for the points
-	start = omp_get_wtime();
-	dbs.build_kdtree();
-	//cout << "Build kdtree took " float c_buff [200];<< omp_get_wtime() - start << " seconds." << endl;
-
-	start = omp_get_wtime();
-	//run_dbscan_algo(dbs);
-	run_dbscan_algo_uf(dbs);
-	//cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
-
-
-	// Calculate boxes from all the clusters found
-	float c_buff [200];
-	int buffer_size = dbs.writeClusters_uf(c_buff);
-	*/
-	
 	//Send back boxes of found clusters to master
 	int root = 0;
-	//MPI_Send(&c_buff, buffer_size, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-	MPI_Send(&c_buff, nn  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian
+	MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
+	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian
 
-	}
-
-	  //cout << "worker1 done!" << endl;
-}else{
-	cout << endl << "HELLO FROM WORKER2" << endl;
+    
+    std::cout << "Thread: " << my_data->thread_id << " done.\n";
+    pthread_exit(NULL);
 }
 
+/*************************************************************************************
+*		Main
+**************************************************************************************/
+int main(int argc, char **argv) {
+	int my_rank = 0;
+
+	bool dbscan = false;
+	int nth_point = 5; // five is default
+	double eps = 0.6; // epsilon for clustering default 0.6 for the
+	int minCl = 30;
+
+	for (int i = 1; i < argc; i++) { 
+	            if (i + 1 != argc) // Check that we haven't finished parsing already
+	                if(std::strcmp(argv[i], "-d") == 0) {
+	                    dbscan = true;
+	                } else if(std::strcmp(argv[i], "-n") == 0){
+	 					//nth_point = atoi(argv[i+1]);
+	 					sscanf(argv[i+1], "%i", &nth_point);
+					} else if(std::strcmp(argv[i], "-e") == 0){
+						eps = atof(argv[i+1]);
+					} else if(std::strcmp(argv[i], "-m") == 0){
+						minCl = atoi(argv[i+1]);                   
+	            }
+	            std::cout << argv[i] << " ";
+	        }
+
+	  cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
+
+	// MPI initializations
+	MPI_Status status;
+	MPI_Init (&argc, &argv);
+	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
+	MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
+
+/*******************************************************************************************
+*		Master runs this code
+********************************************************************************************/
+	if(my_rank == 0){ 
+
+	  
+	  std::vector<std::vector<float> > floats;
+	  int m_tag = 0; // MPI message tag
+
+	  std::string infile = "../../BinAndTxt/0000000001.bin";
+
+	  // Read file and create 8 point clouds
+	  // Nth_point will be kept from the data e.g. 3, every third point will be used
+	  Filters filt;
+	  filt.read_file(infile, nth_point);
+	  filt.filter_and_slice(&floats);
+	  
+
+	// Get the number of processes
+	int world_size;
+	int sectors = 8;
+	MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
 
 
+	// Distribute the data/sectors of point cloud 
+	for(int i = 0; i < sectors ; i++){ 
+	   int receiver = i%(world_size-1);
+	   int bsize = floats.at(i).size();
+	   MPI_Send(&bsize, 1, MPI_INT, (receiver+1), m_tag, MPI_COMM_WORLD);
+	   float* f = &floats.at(0)[0];
+	   MPI_Send(&f, bsize, MPI_FLOAT, (receiver+1), m_tag, MPI_COMM_WORLD);
+	}
 
-//*****************************************************************************************************************
 
+	 // Read new file while waiting...
+	 
+	 // Receive all sectors from workers...
+
+	// This needs to be done 8 times
+
+	// Distribute the data/sectors of point cloud 
+	for(int i = 0; i < sectors ; i++){ 
+		int number_amount;
+		MPI_Status status;
+		MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+		MPI_Get_count(&status, MPI_FLOAT, &number_amount);
+
+		// Allocate a buffer to hold the incoming numbers
+		float* number_buf = (float*)malloc(sizeof(float) * number_amount);
+		// Now receive the message with the allocated buffer
+		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);  
+		free(number_buf);
+		cout << "Master received values" << endl; 
+	}
+
+	
+/********************************************************************************************************
+*		Workers run this code
+********************************************************************************************************/
+}else if(my_rank >= 1){ 
+
+	pcl::console::TicToc tt;
+
+	//Calculate how many pieces i get..
+	//spwan that amount of threads
+   int world_size;
+   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+   	int pieces_recv = 0;
+  	 for(int i = 0; i < 8 ; i++){ // Loop through all the slices
+	   if((i%(world_size-1)+1) == my_rank) pieces_recv++;
+	}
+
+
+	pthread_t threads[pieces_recv]; 
+	struct thread_data td[pieces_recv];
+	pthread_attr_t attr;
+	int rc;
+    void *status;
+
+    //Initialize and set thread joinable
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+    // Create new threads
+	for(int i=0; i < pieces_recv; i++ ){
+      td[i].thread_id = i;
+
+      rc = pthread_create(&threads[i], NULL, segmentation, (void *)&td[i]);
+      if (rc){
+         cout << "Error:unable to create thread," << rc << endl;
+         exit(-1);
+      }
+    }
+
+    // free attribute and wait for the other threads
+    pthread_attr_destroy(&attr);
+    for(int i=0; i < pieces_recv; i++ ){
+       rc = pthread_join(threads[i], &status);
+       if (rc){
+          cout << "Error:unable to join," << rc << endl;
+          exit(-1);
+       }
+       //cout << "Main: completed thread id :" << i ;
+       //cout << "  exiting with status :" << status << endl;
+    }
+}
+//******************************************************************************************************
 // End MPI
 MPI_Finalize ();
 return 0;
 }
+

@@ -16,7 +16,7 @@ endif()
 include_directories(${dbscan})
 link_directories(${dbscan})
 
-add_executable(my_mpi mpi_test.cpp dbscan/clusters.cpp dbscan/clusters.h dbscan/dbscan.cpp dbscan/dbscan.h dbscan/kdtree2.cpp dbscan/kdtree2.hpp dbscan/utils.cpp dbscan/utils.h)
+add_executable(my_mpi mpi_test.cpp dbscan/clusters.cpp dbscan/clusters.h dbscan/dbscan.cpp dbscan/dbscan.h dbscan/kdtree2.cpp dbscan/kdtree2.hpp dbscan/utils.cpp dbscan/utils.h filter.cpp filter.h segmentation.cpp segmentation.h)
 SET(CMAKE_C_COMPILER mpicc)
 SET(CMAKE_CXX_COMPILER mpicxx)
 target_link_libraries(my_mpi mpi)
