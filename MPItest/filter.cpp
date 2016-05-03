@@ -24,7 +24,7 @@ int Filters::read_file(std::string infile, int nth_point)
 		pcl::PointXYZ point;
 		input.read((char *) &point.x, 3*sizeof(float));
 		input.read((char *) &ignore, sizeof(float));
-		if(i%nth_point == 0)cloud->points.push_back(point);
+		if(i%nth_point == 0)cloud.push_back(point);
 	}
 	input.close();
 
@@ -38,7 +38,7 @@ int Filters::read_file(std::string infile, int nth_point)
 
 int Filters::filter_and_slice(std::vector<std::vector<float> > *floats)
 {
-
+	/*
 	  double zero = 0.0000000;
 	  for (int iii = 0; iii < static_cast<int> (cloud->size()); ++iii){ 
     	if(cloud->points[iii].x > zero){
@@ -87,7 +87,7 @@ int Filters::filter_and_slice(std::vector<std::vector<float> > *floats)
 	          }
 	      }
    
-  }
+  }*/
 	
 	return 0;		
 }

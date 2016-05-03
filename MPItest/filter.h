@@ -15,7 +15,7 @@ using namespace std;
 class Filters
 {
 
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
+	pcl::PointCloud<pcl::PointXYZ> cloud;
 
 	public:
 		//Filters():m_pts(NULL),m_kdtree(NULL){ }
