@@ -16,8 +16,9 @@ class Filters
 {
 
 	public:
-		
+
 	pcl::PointCloud<pcl::PointXYZ> cloud;
+	//std::vector<std::vector<float> > floats ( 8, std::vector<float> ( 8, 0 ) );
 	std::vector<std::vector<float> > floats;
 
 	public:

@@ -39,6 +39,9 @@ int Filters::read_file(std::string infile, int nth_point)
 int Filters::filter_and_slice()
 {
 	cout << "Start filtering!" << endl;
+
+	floats.resize(8, std::vector<float>(0,0));
+	
 	  double zero = 0.0000000;
 	  for (int iii = 0; iii < static_cast<int> (cloud.size()); ++iii){ 
     	if(cloud.points[iii].x > zero){
