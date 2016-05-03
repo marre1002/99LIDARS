@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
 ********************************************************************************************************/
 }else if(my_rank == 1){ 
 
-	pcl::console::TicToc tt;
+	/*pcl::console::TicToc tt;
 
 	//Calculate how many pieces i get..
 	//spwan that amount of threads
@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
        }
        //cout << "Main: completed thread id :" << i ;
        //cout << "  exiting with status :" << status << endl;
-    }
+    }*/
 }
 //******************************************************************************************************
 // End MPI
