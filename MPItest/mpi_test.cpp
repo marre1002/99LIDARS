@@ -81,16 +81,12 @@ int main(int argc, char **argv) {
 	cout << "world size: " << world_size << endl;
 	// Distribute the data/sectors of point cloud 
 	for(int i = 0; i < sectors ; i++){ 
-	   int receiver = (i%(world_size-1)+1);
 	   int bsize = filt.floats.at(i).size();
-
-	   cout << "Sending to node: " << receiver <<  " buffer size: " << bsize << endl;
-	   MPI_Send(&bsize, 1, MPI_INT, receiver, m_tag, MPI_COMM_WORLD);
+	   MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
 	   float* f = &filt.floats.at(0)[0];
-	   MPI_Send(&f, bsize, MPI_FLOAT, receiver, m_tag, MPI_COMM_WORLD);
+	   MPI_Send(&f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
 	}
 
-	cout << "Sending went well!" << endl;
 
 	 // Read new file while waiting...
 	 
@@ -119,8 +115,7 @@ int main(int argc, char **argv) {
 ********************************************************************************************************/
 }else if(my_rank > 0){ 
 
-	cout << "Hello from node " << my_rank << endl;
-	/*pcl::console::TicToc tt;
+	pcl::console::TicToc tt;
 
 	//Calculate how many pieces i get..
 	//spwan that amount of threads
@@ -132,22 +127,7 @@ int main(int argc, char **argv) {
    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
- 	cout << "received " << count << endl;
-
- 	pcl::console::TicToc tt;
-	//tt.tic();
-
-	struct thread_data *my_data;
-    
-    my_data = (struct thread_data *) threadarg;
-
-    cout << "Hello from thread " << my_data->thread_id;
-    // Receive sector from master
- 	int count;
- 	float buff [50000]; 
-    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
- 	MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+ 
  	Segmentation seg;
  	seg.build_cloud(buff, count);
 
@@ -161,7 +141,7 @@ int main(int argc, char **argv) {
 	//Send back boxes of found clusters to master
 	int root = 0;
 	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian */
+	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian
 }
 //******************************************************************************************************
 // End MPI
