@@ -119,10 +119,6 @@ int main(int argc, char **argv) {
 
 	pcl::console::TicToc tt;
 
-	//Calculate how many pieces i get..
-	//spwan that amount of threads
-   int world_size;
-   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
    float buff [50000]; 
    int count;
@@ -135,6 +131,7 @@ int main(int argc, char **argv) {
  	Segmentation seg;
  	seg.build_cloud(buff, count);
 
+ 	cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
  	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
 
  	float buffer[200];

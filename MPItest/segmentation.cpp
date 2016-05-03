@@ -17,7 +17,7 @@ int Segmentation::build_cloud(float *f, int size)
 			point.x = f[i];
 			point.y = f[i+1];
 			point.z = f[i+2];
-			cloud->push_back(point);
+			cloud.push_back(point);
 		}
 	}
 
@@ -25,6 +25,8 @@ int Segmentation::build_cloud(float *f, int size)
 }
 int Segmentation::ransac(double threshold, int iterations)
 {
+
+	  cloud_filtered.reset(new pcl::PointCloud<pcl::PointXYZ>()); 
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
 	  pcl::SACSegmentation<pcl::PointXYZ> seg;
@@ -41,11 +43,12 @@ int Segmentation::ransac(double threshold, int iterations)
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (iterations);
 	  seg.setDistanceThreshold (threshold);
-	  seg.setInputCloud (cloud);
+	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloudb (new pcl::PointCloud<pcl::PointXYZ> (cloud));
+	  seg.setInputCloud (cloudb);
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
 	  pcl::ExtractIndices<pcl::PointXYZ> extract;
-	  extract.setInputCloud (cloud);
+	  extract.setInputCloud (cloudb);
 	  extract.setIndices (inliers);
 	  extract.setNegative (false);
 	  // Get the points associated with the planar surface

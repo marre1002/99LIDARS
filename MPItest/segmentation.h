@@ -29,20 +29,20 @@ using namespace pcl;
 
 class Segmentation
 {
+	
 
 public:
-	//Class point cloud
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;	
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered;
-
-public:
-	//Filters():m_pts(NULL),m_kdtree(NULL){ }
 	Segmentation();
 
 	int 	build_cloud(float *f, int size);
 	int     ransac(double threshold, int iterations);
 	int     euclidian(float *f, double eps, int minCl);
 	int     dbscan(std::vector<std::vector<float> > *floats);
+
+public:
+	//Class point cloud
+	pcl::PointCloud<pcl::PointXYZ> cloud;	
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered;
 	
 };
 
