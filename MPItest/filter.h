@@ -15,11 +15,10 @@ class Filters
 {
 
 public:
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
-
-public:
 	//Filters():m_pts(NULL),m_kdtree(NULL){ }
 	Filters();
+
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
 
 	int     read_file(std::string str, int nth_point);
 	int     filter_and_slice(std::vector<std::vector<float> > *floats);
