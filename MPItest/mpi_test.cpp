@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 	if(my_rank == 0){ 
 
 	  
-	  std::vector<std::vector<float> > floats;
+	  //std::vector<std::vector<float> > floats;
 	  int m_tag = 0; // MPI message tag
 
 	  std::string infile = "../../BinAndTxt/0000000001.bin";
@@ -110,11 +110,11 @@ int main(int argc, char **argv) {
 	  // Nth_point will be kept from the data e.g. 3, every third point will be used
 	  Filters filt;
 	  filt.read_file(infile, nth_point);
-	  filt.filter_and_slice(floats);
+	  filt.filter_and_slice();
 
 	  for (int i = 0; i < 7; ++i)
 	  {
-	  	cout << "Size of sector " << i << " is " << floats.at(i).size() << endl;
+	  	cout << "Size of sector " << i << " is " << filt.floats.at(i).size() << endl;
 	  }
 	  
 
@@ -127,9 +127,9 @@ int main(int argc, char **argv) {
 	// Distribute the data/sectors of point cloud 
 	for(int i = 0; i < sectors ; i++){ 
 	   int receiver = i%(world_size-1);
-	   int bsize = floats.at(i).size();
+	   int bsize = filt.floats.at(i).size();
 	   MPI_Send(&bsize, 1, MPI_INT, (receiver+1), m_tag, MPI_COMM_WORLD);
-	   float* f = &floats.at(0)[0];
+	   float* f = &filt.floats.at(0)[0];
 	   MPI_Send(&f, bsize, MPI_FLOAT, (receiver+1), m_tag, MPI_COMM_WORLD);
 	}
 

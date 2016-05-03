@@ -36,7 +36,7 @@ int Filters::read_file(std::string infile, int nth_point)
 	return 0;		
 }
 
-int Filters::filter_and_slice(std::vector<std::vector<float> >& floats)
+int Filters::filter_and_slice()
 {
 	cout << "Start filtering!" << endl;
 	  double zero = 0.0000000;
