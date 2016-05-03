@@ -26,12 +26,13 @@ static int numprocs;
 void *segmentation(void *threadarg)
 {
 	pcl::console::TicToc tt;
-	tt.tic();
+	//tt.tic();
 
 	struct thread_data *my_data;
     
     my_data = (struct thread_data *) threadarg;
 
+    cout << "Hello from thread " << my_data->thread_id;
     // Receive sector from master
  	int count;
  	float buff [50000]; 
@@ -70,19 +71,19 @@ int main(int argc, char **argv) {
 	int minCl = 30;
 
 	for (int i = 1; i < argc; i++) { 
-	            if (i + 1 != argc) // Check that we haven't finished parsing already
-	                if(std::strcmp(argv[i], "-d") == 0) {
-	                    dbscan = true;
-	                } else if(std::strcmp(argv[i], "-n") == 0){
-	 					//nth_point = atoi(argv[i+1]);
-	 					sscanf(argv[i+1], "%i", &nth_point);
-					} else if(std::strcmp(argv[i], "-e") == 0){
-						eps = atof(argv[i+1]);
-					} else if(std::strcmp(argv[i], "-m") == 0){
-						minCl = atoi(argv[i+1]);                   
-	            }
-	            std::cout << argv[i] << " ";
-	        }
+        if (i + 1 != argc) // Check that we haven't finished parsing already
+            if(std::strcmp(argv[i], "-d") == 0) {
+                dbscan = true;
+            } else if(std::strcmp(argv[i], "-n") == 0){
+					//nth_point = atoi(argv[i+1]);
+					sscanf(argv[i+1], "%i", &nth_point);
+			} else if(std::strcmp(argv[i], "-e") == 0){
+				eps = atof(argv[i+1]);
+			} else if(std::strcmp(argv[i], "-m") == 0){
+				minCl = atoi(argv[i+1]);                   
+        }
+        std::cout << argv[i] << " ";
+	}
 
 	  cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
 
@@ -108,6 +109,11 @@ int main(int argc, char **argv) {
 	  Filters filt;
 	  filt.read_file(infile, nth_point);
 	  filt.filter_and_slice(&floats);
+
+	  for (int i = 0; i < 7; ++i)
+	  {
+	  	cout << "Size of sector " << i << " is " << floats.at(i).size() << endl;
+	  }
 	  
 
 	// Get the number of processes
@@ -125,6 +131,7 @@ int main(int argc, char **argv) {
 	   MPI_Send(&f, bsize, MPI_FLOAT, (receiver+1), m_tag, MPI_COMM_WORLD);
 	}
 
+	cout << "Sending went well!" << endl;
 
 	 // Read new file while waiting...
 	 

@@ -202,7 +202,7 @@ int main(int argc, char const *argv[])
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    //Read point cloud from file
+    //Read point cloud from pcd-file
 
     std::cerr << "Loding pcd-file to memory\n", tt.tic ();
     if (pcl::io::loadPCDFile<pcl::PointXYZ> ("data00.pcd", *cloud) == -1) //* load the file
