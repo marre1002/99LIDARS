@@ -47,7 +47,6 @@ int main(int argc, char **argv) {
 	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
 	MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
 
-	cout << "Assigning rank works!" <<  endl;
 
 /*******************************************************************************************
 *		Master runs this code
@@ -83,7 +82,7 @@ int main(int argc, char **argv) {
 	for(int i = 0; i < sectors ; i++){ 
 	   int bsize = filt.floats.at(i).size();
 	   MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
-	   float* f = &filt.floats.at(0)[0];
+	   float* f = &filt.floats.at(i)[0];
 	   MPI_Send(&f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
 	}
 
