@@ -124,10 +124,12 @@ int main(int argc, char **argv) {
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
 
 
+	cout << "world size: " << world_size << endl;
 	// Distribute the data/sectors of point cloud 
 	for(int i = 0; i < sectors ; i++){ 
 	   int receiver = i%(world_size-1);
 	   int bsize = filt.floats.at(i).size();
+	   cout << "Sending to node: " << receiver << endl;
 	   MPI_Send(&bsize, 1, MPI_INT, (receiver+1), m_tag, MPI_COMM_WORLD);
 	   float* f = &filt.floats.at(0)[0];
 	   MPI_Send(&f, bsize, MPI_FLOAT, (receiver+1), m_tag, MPI_COMM_WORLD);
