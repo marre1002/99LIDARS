@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 	  //std::vector<std::vector<float> > floats;
 	  int m_tag = 0; // MPI message tag
 
-	  std::string infile = "../../BinAndTxt/0000000001.bin";
+	  std::string infile = "../../BinAndTxt/0000000002.bin";
 
 	  // Read file and create 8 point clouds
 	  // Nth_point will be kept from the data e.g. 3, every third point will be used
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
 	  filt.read_file(infile, nth_point);
 	  filt.filter_and_slice();
 
-	  for (int i = 0; i < 7; ++i)
+	  for (int i = 0; i < 8; ++i)
 	  {
 	  	cout << "Size of sector " << i << " is " << filt.floats.at(i).size() << endl;
 	  }
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
 ********************************************************************************************************/
 }else if(my_rank == 1){ 
 
-	/*pcl::console::TicToc tt;
+	pcl::console::TicToc tt;
 
 	//Calculate how many pieces i get..
 	//spwan that amount of threads
@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
        }
        //cout << "Main: completed thread id :" << i ;
        //cout << "  exiting with status :" << status << endl;
-    }*/
+    }
 }
 //******************************************************************************************************
 // End MPI
