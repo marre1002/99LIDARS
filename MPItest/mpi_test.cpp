@@ -129,7 +129,8 @@ int main(int argc, char **argv) {
 	for(int i = 0; i < sectors ; i++){ 
 	   int receiver = (i%(world_size-1)+1);
 	   int bsize = filt.floats.at(i).size();
-	   cout << "Sending to node: " << receiver << endl;
+
+	   cout << "Sending to node: " << receiver <<  " buffer size: " << bsize << endl;
 	   MPI_Send(&bsize, 1, MPI_INT, receiver, m_tag, MPI_COMM_WORLD);
 	   float* f = &filt.floats.at(0)[0];
 	   MPI_Send(&f, bsize, MPI_FLOAT, receiver, m_tag, MPI_COMM_WORLD);
@@ -171,12 +172,20 @@ int main(int argc, char **argv) {
    int world_size;
    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-   	int pieces_recv = 0;
+   float buff [50000]; 
+   int count;
+   MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+ 	cout << "received " << count << endl;
+
+   /*	int pieces_recv = 0;
   	 for(int i = 0; i < 8 ; i++){ // Loop through all the slices
 	   if((i%(world_size-1)+1) == my_rank) pieces_recv++;
 	}
 
 
+	
 	pthread_t threads[pieces_recv]; 
 	struct thread_data td[pieces_recv];
 	pthread_attr_t attr;
@@ -209,7 +218,7 @@ int main(int argc, char **argv) {
        }
        //cout << "Main: completed thread id :" << i ;
        //cout << "  exiting with status :" << status << endl;
-    }
+    }*/
 }
 //******************************************************************************************************
 // End MPI
