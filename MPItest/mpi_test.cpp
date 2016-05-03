@@ -53,6 +53,7 @@ int main(int argc, char **argv) {
 ********************************************************************************************/
 	if(my_rank == 0){ 
 
+	  int read_file;
 	  pcl::console::TicToc tt;
 	  tt.tic();	  
 	  //std::vector<std::vector<float> > floats;
@@ -66,22 +67,11 @@ int main(int argc, char **argv) {
 	  filt.read_file(infile, nth_point);
 	  filt.filter_and_slice();
 
-	  for (int i = 0; i < 8; ++i)
-	  {
-	  	//cout << "Size of sector " << i << " is " << filt.floats.at(i).size() << endl;
-	  }
-	  
+	 read_file = tt.toc();
 
-	// Get the number of processes
-	int world_size;
-	int sectors = 8;
-	MPI_Comm_size(MPI_COMM_WORLD, &world_size); 
-
-
-	cout << "world size: " << world_size << endl;
-	// Distribute the data/sectors of point cloud 
-
-	float buf[30] = {1.1,19.0,1.1};
+	 int sectors = 8;
+	
+	 tt.tic(); // Distributing, processing, and cathering
 	for(int i = 0; i < sectors ; i++){ 
 	   int bsize = filt.floats.at(i).size();
 	   MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
@@ -102,7 +92,10 @@ int main(int argc, char **argv) {
 		free(number_buf);
 		cout << "Master received " << number_amount << " values from " << status.MPI_SOURCE << endl; 
 	}
-	cout << "Done in " << tt.toc() << " ms" << endl;
+	int processing = tt.toc();
+	cout << "Read file and filter: " << read_file << " ms" << endl;
+	cout << "Distributing, processing, cathering:" << processing << " ms" << endl;
+	cout << "Total: " << (read_file + processing) <<  endl;
 
 	
 /********************************************************************************************************
