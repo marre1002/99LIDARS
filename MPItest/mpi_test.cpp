@@ -3,7 +3,6 @@
 #include <vector>
 #include <sstream>
 #include <mpi.h>
-#include <pthread.h>
 
 #include "filter.h"
 #include "segmentation.h"
@@ -13,51 +12,6 @@ using namespace pcl;
 using namespace std;
 
 static int numprocs;
-
-/* This struct gets passed on to every
-	worker thread created. */
-	struct thread_data{
-		int thread_id;
-	};
-
-/**
-*	Thread function, handles the segmentation of one sector
-*/
-void *segmentation(void *threadarg)
-{
-	pcl::console::TicToc tt;
-	//tt.tic();
-
-	struct thread_data *my_data;
-    
-    my_data = (struct thread_data *) threadarg;
-
-    cout << "Hello from thread " << my_data->thread_id;
-    // Receive sector from master
- 	int count;
- 	float buff [50000]; 
-    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
- 	MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
- 	Segmentation seg;
- 	seg.build_cloud(buff, count);
-
- 	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
-
- 	float buffer[200];
- 	double eps = 0.6;
- 	int minCl = 30;
- 	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
-
-	//Send back boxes of found clusters to master
-	int root = 0;
-	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian
-
-    
-    std::cout << "Thread: " << my_data->thread_id << " done."  <<  endl;
-    pthread_exit(NULL);
-}
 
 /*************************************************************************************
 *		Main
@@ -156,16 +110,17 @@ int main(int argc, char **argv) {
 		// Now receive the message with the allocated buffer
 		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);  
 		free(number_buf);
-		cout << "Master received values" << endl; 
+		cout << "Master received values from " << status.MPI_SOURCE << endl; 
 	}
 
 	
 /********************************************************************************************************
 *		Workers run this code
 ********************************************************************************************************/
-}else if(my_rank == 1){ 
+}else if(my_rank > 0){ 
 
-	pcl::console::TicToc tt;
+	cout << "Hello from node " << my_rank << endl;
+	/*pcl::console::TicToc tt;
 
 	//Calculate how many pieces i get..
 	//spwan that amount of threads
@@ -179,46 +134,34 @@ int main(int argc, char **argv) {
 
  	cout << "received " << count << endl;
 
-   /*	int pieces_recv = 0;
-  	 for(int i = 0; i < 8 ; i++){ // Loop through all the slices
-	   if((i%(world_size-1)+1) == my_rank) pieces_recv++;
-	}
+ 	pcl::console::TicToc tt;
+	//tt.tic();
 
+	struct thread_data *my_data;
+    
+    my_data = (struct thread_data *) threadarg;
 
-	
-	pthread_t threads[pieces_recv]; 
-	struct thread_data td[pieces_recv];
-	pthread_attr_t attr;
-	int rc;
-    void *status;
+    cout << "Hello from thread " << my_data->thread_id;
+    // Receive sector from master
+ 	int count;
+ 	float buff [50000]; 
+    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+ 	MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    //Initialize and set thread joinable
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+ 	Segmentation seg;
+ 	seg.build_cloud(buff, count);
 
-    // Create new threads
-    cout << "about to create threads" << endl;
-	for(int i=0; i < pieces_recv; i++ ){
-      td[i].thread_id = i;
+ 	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
 
-      rc = pthread_create(&threads[i], NULL, segmentation, (void *)&td[i]);
-      if (rc){
-         cout << "Error:unable to create thread," << rc << endl;
-         exit(-1);
-      }
-    }
+ 	float buffer[200];
+ 	double eps = 0.6;
+ 	int minCl = 30;
+ 	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
 
-    // free attribute and wait for the other threads
-    pthread_attr_destroy(&attr);
-    for(int i=0; i < pieces_recv; i++ ){
-       rc = pthread_join(threads[i], &status);
-       if (rc){
-          cout << "Error:unable to join," << rc << endl;
-          exit(-1);
-       }
-       //cout << "Main: completed thread id :" << i ;
-       //cout << "  exiting with status :" << status << endl;
-    }*/
+	//Send back boxes of found clusters to master
+	int root = 0;
+	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
+	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian */
 }
 //******************************************************************************************************
 // End MPI
