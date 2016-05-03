@@ -93,6 +93,8 @@ int main(int argc, char **argv) {
 	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
 	MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
 
+	cout << "Assigning rank works!" <<  endl;
+
 /*******************************************************************************************
 *		Master runs this code
 ********************************************************************************************/
@@ -158,7 +160,7 @@ int main(int argc, char **argv) {
 /********************************************************************************************************
 *		Workers run this code
 ********************************************************************************************************/
-}else if(my_rank >= 1){ 
+}else if(my_rank == 1){ 
 
 	pcl::console::TicToc tt;
 
@@ -184,6 +186,7 @@ int main(int argc, char **argv) {
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
     // Create new threads
+    cout << "about to create threads" << endl;
 	for(int i=0; i < pieces_recv; i++ ){
       td[i].thread_id = i;
 
