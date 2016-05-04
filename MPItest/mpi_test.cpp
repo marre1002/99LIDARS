@@ -78,6 +78,7 @@ int main(int argc, char **argv) {
 	   float *f = &filt.floats.at(i)[0];
 	   MPI_Send(f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
 	}
+	 int sending = tt.toc(); 
 	
 	for(int i = 0; i < sectors ; i++){ 
 		int number_amount;
@@ -94,7 +95,8 @@ int main(int argc, char **argv) {
 	}
 	int processing = tt.toc();
 	cout << "Read file and filter: " << read_file << " ms" << endl;
-	cout << "Distributing, processing, cathering:" << processing << " ms" << endl;
+	cout << "Sending data-loop: " << sending << endl;
+	cout << "Distributing, processing, gathering:" << processing << " ms" << endl;
 	cout << "Total: " << (read_file + processing) <<  endl;
 
 	
