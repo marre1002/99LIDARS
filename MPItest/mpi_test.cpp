@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include <mpi.h>
+#include <algorithm>    // std::sort
 
 #include "filter.h"
 #include "segmentation.h"
@@ -12,6 +13,10 @@ using namespace pcl;
 using namespace std;
 
 static int numprocs;
+
+bool less_vectors(const vector<float>& a,const vector<float>& b) {
+   return a.size() < b.size();
+}
 
 /*************************************************************************************
 *		Main
@@ -69,7 +74,15 @@ int main(int argc, char **argv) {
 
 	 read_file = tt.toc();
 
-	 int sectors = 8;
+	 std::sort(filt.floats.begin(),filt.floats.end(),less_vectors);
+
+	int sectors = 8;
+	
+	 for(int i = 0; i < sectors ; i++){ 
+	   int bsize = filt.floats.at(i).size();
+	   cout << "floats: " << i << "\t" << bsize;
+	 }
+
 	
 	 tt.tic(); // Distributing, processing, and cathering
 	for(int i = 0; i < sectors ; i++){ 
