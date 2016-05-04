@@ -15,7 +15,7 @@ using namespace std;
 static int numprocs;
 
 bool less_vectors(const vector<float>& a,const vector<float>& b) {
-   return a.size() < b.size();
+   return a.size() > b.size();
 }
 
 /*************************************************************************************
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	
 	 for(int i = 0; i < sectors ; i++){ 
 	   int bsize = filt.floats.at(i).size();
-	   cout << "floats: " << i << "\t" << bsize;
+	   cout << "floats: " << i << "\t" << bsize << endl;
 	 }
 
 	
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 	pcl::console::TicToc tt;
 
 
-   float buff [50000]; 
+   float buff [80000]; 
    int count;
    MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);

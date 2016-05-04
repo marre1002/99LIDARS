@@ -9,6 +9,7 @@ Segmentation::Segmentation()
 
 int Segmentation::build_cloud(float *f, int size)
 {
+	cloud.clear();
 
 	for(int i=0; i < size; i++) {
 		if(i%3 == 0)
