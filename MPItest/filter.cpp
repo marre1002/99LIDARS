@@ -11,7 +11,7 @@ int Filters::read_file(std::string infile, int nth_point)
 {
 
 	cloud.clear();
-	
+
 	// load point cloud
 	fstream input(infile.c_str(), ios::in | ios::binary);
 	if(!input.good()){
@@ -32,7 +32,7 @@ int Filters::read_file(std::string infile, int nth_point)
 
 	float percent = ((float)(i/nth_point))/i;
 
-	std::cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ")\n";
+	//std::cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ")\n";
 
 	
 	return 0;		
@@ -40,7 +40,9 @@ int Filters::read_file(std::string infile, int nth_point)
 
 int Filters::filter_and_slice()
 {
-	cout << "Start filtering!" << endl;
+
+
+	floats.clear();
 
 	floats.resize(8, std::vector<float>(0,0));
 

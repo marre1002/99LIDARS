@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 	  //std::vector<std::vector<float> > floats;
 	  int m_tag = 0; // MPI message tag
 
-	  std::string infile = "../../BinAndTxt/0000000002.bin";
+	  std::string infile = "../../BinAndTxt/00000000021.bin";
 
 	  // Read file and create 8 point clouds
 	  // Nth_point will be kept from the data e.g. 3, every third point will be used
@@ -78,12 +78,6 @@ int main(int argc, char **argv) {
 
 	int sectors = 8;
 	
-	 for(int i = 0; i < sectors ; i++){ 
-	   int bsize = filt.floats.at(i).size();
-	   cout << "floats: " << i << "\t" << bsize << endl;
-	 }
-
-	
 	 tt.tic(); // Distributing, processing, and cathering
 	for(int i = 0; i < sectors ; i++){ 
 	   int bsize = filt.floats.at(i).size();
@@ -93,6 +87,7 @@ int main(int argc, char **argv) {
 	}
 	 int sending = tt.toc(); 
 	
+	int clusterCount = 0;
 	for(int i = 0; i < sectors ; i++){ 
 		int number_amount;
 		MPI_Status status;
@@ -103,14 +98,17 @@ int main(int argc, char **argv) {
 		float* number_buf = (float*)malloc(sizeof(float) * number_amount);
 		// Now receive the message with the allocated buffer
 		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);  
+		clusterCount = clusterCount + (number_amount/3);
 		free(number_buf);
-		cout << "Master received " << number_amount << " values from " << status.MPI_SOURCE << endl; 
+		//cout << "Master received " << number_amount << " values from " << status.MPI_SOURCE << endl; 
 	}
 	int processing = tt.toc();
-	cout << "Read file and filter: " << read_file << " ms" << endl;
-	cout << "Sending data-loop: " << sending << endl;
-	cout << "Distributing, processing, gathering:" << processing << " ms" << endl;
-	cout << "Total: " << (read_file + processing) <<  endl;
+	cout << "Read: " << filt.cloud.size() << " from " << infile <<  endl; 
+	cout << "Number of clusters found:\t" << endl; 
+	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
+	cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
+	cout << "Distri, process, gather:\t\t" << processing << " ms" << endl;
+	cout << "=========== Total: \t" << (read_file + processing) << " ms ==================" <<  endl;
 
 	
 /********************************************************************************************************
@@ -129,7 +127,7 @@ int main(int argc, char **argv) {
  	Segmentation seg;
  	seg.build_cloud(buff, count);
 
- 	cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
+ 	//cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
  	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
 
  	float buffer[200];
