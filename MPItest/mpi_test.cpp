@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 	  //std::vector<std::vector<float> > floats;
 	  int m_tag = 0; // MPI message tag
 
-	  std::string infile = "../../BinAndTxt/00000000021.bin";
+	  std::string infile = "../../BinAndTxt/0000000021.bin";
 
 	  // Read file and create 8 point clouds
 	  // Nth_point will be kept from the data e.g. 3, every third point will be used
