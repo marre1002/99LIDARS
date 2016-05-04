@@ -28,6 +28,9 @@ int main(int argc, char **argv) {
 	int nth_point = 5; // five is default
 	double eps = 0.6; // epsilon for clustering default 0.6 for the
 	int minCl = 30;
+	
+	std::string infile = "../../BinAndTxt/";
+	std::string file = "0000000021.bin";
 
 	for (int i = 1; i < argc; i++) { 
         if (i + 1 != argc) // Check that we haven't finished parsing already
@@ -39,11 +42,14 @@ int main(int argc, char **argv) {
 			} else if(std::strcmp(argv[i], "-e") == 0){
 				eps = atof(argv[i+1]);
 			} else if(std::strcmp(argv[i], "-m") == 0){
-				minCl = atoi(argv[i+1]);                   
+				minCl = atoi(argv[i+1]);  
+			}else if(std::strcmp(argv[i], "-i") == 0){
+				file.assign(argv[i+1]);                                    
         }
-        std::cout << argv[i] << " ";
+        //std::cout << argv[i] << " ";
 	}
 
+	infile.append(file);
 	  //cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
 
 	// MPI initializations
@@ -64,7 +70,7 @@ int main(int argc, char **argv) {
 	  //std::vector<std::vector<float> > floats;
 	  int m_tag = 0; // MPI message tag
 
-	  std::string infile = "../../BinAndTxt/0000000021.bin";
+	  
 
 	  // Read file and create 8 point clouds
 	  // Nth_point will be kept from the data e.g. 3, every third point will be used
@@ -103,8 +109,8 @@ int main(int argc, char **argv) {
 		//cout << "Master received " << number_amount << " values from " << status.MPI_SOURCE << endl; 
 	}
 	int processing = tt.toc();
-	cout << "Read: " << filt.cloud.size() << " from " << infile <<  endl; 
-	cout << "Number of clusters found:\t" << endl; 
+	cout << "Read: " << filt.cloud.size() << " from " << infile << " (nth: " << nth_point <<")" << endl; 
+	cout << "Number of clusters found:\t"  << clusterCount << endl; 
 	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 	cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	cout << "Distri, process, gather:\t\t" << processing << " ms" << endl;
