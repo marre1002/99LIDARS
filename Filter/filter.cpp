@@ -29,6 +29,22 @@
 #include "dbscan/kdtree2.hpp"
 //************************************
 
+#define OFFSET 0.08
+
+struct object{
+		pcl::PointXYZ minPt;
+		pcl::PointXYZ maxPt;
+		bool need_merging;
+};
+
+bool DoObjectsIntersect(object a, object b) {
+  	if(a.minPt.x > (OFFSET+b.maxPt.x)) return false;
+  	if((a.maxPt.x+OFFSET) < b.minPt.x) return false;
+  	if(a.minPt.y > (OFFSET+b.maxPt.y)) return false;
+  	if((a.maxPt.y+OFFSET) < b.minPt.y) return false;
+  	return true;
+}
+
 int main (int argc, char** argv)
 {
 
@@ -76,7 +92,7 @@ int main (int argc, char** argv)
 
   std::vector<pcl::PointXYZ> points;
 
- std::string infile = "../../BinAndTxt/0000000001.bin";
+ std::string infile = "../../BinAndTxt/0000000016.bin";
 
 	// load point cloud
 	fstream input(infile.c_str(), ios::in | ios::binary);
@@ -137,23 +153,23 @@ int main (int argc, char** argv)
 	              }
 	          }else{
 	              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
-	                  cloud2->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	              }else{
 	                  cloud3->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	              }else{
+	                  cloud2->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	              }
 	          }    
 	      }else{
 	          if(cloud->points[iii].y > zero){
 	              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
-	                      cloud4->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                      cloud7->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	                  }else{
-	                      cloud5->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                      cloud6->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	                  }
 	              }else{
 	                  if(cloud->points[iii].y > cloud->points[iii].x){
-	                      cloud6->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                      cloud5->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	                  }else{
-	                      cloud7->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
+	                      cloud4->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
 	                  }
 	          }
 	      }
@@ -173,6 +189,8 @@ int main (int argc, char** argv)
   std::cout << "All sectors:" << total_points << " points" << endl;*/
 
   std::vector<int> times;
+
+  std::vector<std::vector<object> > objectsVector(8, vector<object>(0));
 
   int clusters = 0;
   if(!dbscan){
@@ -242,10 +260,11 @@ int main (int argc, char** argv)
 		      cloud_cluster->is_dense = true;
 		    
 		    
-		    pcl::PointXYZ minPt, maxPt;
-	 		pcl::getMinMax3D (*cloud_cluster, minPt, maxPt);
-	 		points.push_back(minPt);
-	 		points.push_back(maxPt);
+		    object obj;
+		    obj.need_merging = false;
+	 		pcl::getMinMax3D (*cloud_cluster, obj.minPt, obj.maxPt);
+	 		objectsVector.at(ii).push_back(obj);
+	 	
 	 		j++;
 		    cloud_cluster->points.clear();
 		  }
@@ -313,6 +332,32 @@ int main (int argc, char** argv)
   	double avg = (sum/8);
   	cout << "All sectors: " << sum <<" ms, " << "===== Avg time: "<< avg << " ms ================" << endl;  
 
+
+  	/* Merging of boxes*/
+  	int sectors = objectsVector.size(); // Number of sectors
+
+  	for (int i = 0; i < sectors; ++i)
+  	{	
+  		
+  		for (int ii = 0; ii < objectsVector.at(i).size(); ++ii)
+  		{
+  			int next = i+1;	
+  			if(i == 7) next = 0;
+
+  			for (int iii = 0; iii < objectsVector.at(next).size(); ++iii)
+  			{
+  				//cout << "checking " << i << " cluster " << ii << " with " << next << " cluster # " << iii << endl;
+  				if(DoObjectsIntersect(objectsVector.at(i).at(ii),objectsVector.at(next).at(iii))){
+  					
+  					/* Merge code goes here ========= */
+  					
+  					objectsVector.at(i).at(ii).need_merging = true; // Remove this later...
+  					objectsVector.at(next).at(iii).need_merging = true;
+  				}
+  			}
+  		}
+  	}
+
   if(visualization){
 	  // ----------------------------------------------------------------------------------------------------------
 	  // -----Open 3D viewer and add point cloud-----
@@ -321,18 +366,28 @@ int main (int argc, char** argv)
   	  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
 	  viewer->setBackgroundColor (0, 0, 0);
 	  viewer->addPointCloud<pcl::PointXYZ> (cloud, "source");
-	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 0.6f, 0.6f, 0.6f, "source");
+	  float intz = 1.0f;
+	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, intz, intz, intz, "source");
 	  //viewer->addPointCloud<pcl::PointXYZ> (cloud_main, "main");
 	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1.0f, 0.0f, 0.0f, "main");  
 	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
 	  viewer->addCoordinateSystem (1.0);
 	  viewer->initCameraParameters ();
 
+	  double  pos_x = 0;
+	  double  pos_y = -10; // -13
+	  double  pos_z = 19; // 10
+	  double  up_x = 0;
+	  double  up_y = 1;
+	  double  up_z = 1;
+
+	  viewer->setCameraPosition(pos_x,pos_y,pos_z,up_x,up_y,up_z, 0); 		
+
 	  std::stringstream ss;
 	  int counts = 0;
 	  if(!dbscan){
 	  	// Draw boxes around clusters and give then id
-	   for(int h = 0 ; h < points.size(); h++)
+	   /*for(int h = 0 ; h < points.size(); h++)
 	   {
   		    if(h%2 == 0)
   		    {
@@ -347,11 +402,36 @@ int main (int argc, char** argv)
     			middle = pcl::PointXYZ(((a.x+b.x)/2),((a.y+b.y)/2),((a.z+b.z)/2));
     			viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
     			counts++;
-  			}
- 	   }
+  			}*/
+    		/* ====== PRINTING ALL THE BOXES ========================== */
+		  	for (int i = 0; i < 8; ++i)
+  			{
+  				int cluster_num = objectsVector.at(i).size();
+  		
+		  		for (int ii = 0; ii < cluster_num; ++ii)
+		  		{
+		  			ss << "id" << i+ii << "test";
+	    			std::string str = ss.str();
+	  		    	pcl::PointXYZ middle;
+
+	  		    	object obj = objectsVector.at(i).at(ii);
+	  		    	
+	  		    	if(obj.need_merging){
+	  		    		viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 0.0,1.0,0.0, str ,0);
+	  		    	}
+	  		    	else{
+	  		    		viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,0.0,0.0, str ,0);
+	  		    	}
+	  		    	ss.str("");
+	    			ss << counts;
+	    			middle = pcl::PointXYZ(((obj.minPt.x+obj.maxPt.x)/2),((obj.minPt.y+obj.maxPt.y)/2),((obj.minPt.z+obj.maxPt.z)/2));
+	    			viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
+	    			counts++;
+		  		}
+		  	}
 	  //------------------------------------------------------------------------------------------------------------
  		}else{
- 			 for(int h = 0 ; h < cluster_vector.size(); h++)
+ 			 /*for(int h = 0 ; h < cluster_vector.size(); h++)
 			   {
 		  		    if(h%2 == 0)
 		  		    {
@@ -367,7 +447,7 @@ int main (int argc, char** argv)
 		    			viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
 		    			counts++;
 		  			}
-		 	   }
+		 	   }*/
  		}
 
 	  if(lines){
