@@ -21,6 +21,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 //************************************
 // 			DBSCAN includes
@@ -43,6 +44,23 @@ bool DoObjectsIntersect(object a, object b) {
   	if(a.minPt.y > (OFFSET+b.maxPt.y)) return false;
   	if((a.maxPt.y+OFFSET) < b.minPt.y) return false;
   	return true;
+}
+
+object MergeObjects(object a, object b){
+	object c;
+	float LeftCornerX = std::min(a.minPt.x, b.minPt.x);
+	float LeftCornerY = std::min(a.minPt.y, b.minPt.y);
+	float LeftCornerZ = std::min(a.minPt.z, b.minPt.z);
+
+	float RightCornerX = std::max(a.maxPt.x, b.maxPt.x);
+	float RightCornerY = std::max(a.maxPt.y, b.maxPt.y);
+	float RightCornerZ = std::max(a.maxPt.z, b.maxPt.z);
+
+
+	c.minPt = pcl::PointXYZ(LeftCornerX, LeftCornerY, LeftCornerZ);
+	c.maxPt = pcl::PointXYZ(RightCornerX, RightCornerY, RightCornerZ);
+
+	return c;
 }
 
 int main (int argc, char** argv)
@@ -344,7 +362,9 @@ int main (int argc, char** argv)
   			int next = i+1;	
   			if(i == 7) next = 0;
 
-  			for (int iii = 0; iii < objectsVector.at(next).size(); ++iii)
+  			int num = objectsVector.at(next).size();
+
+  			for (int iii = 0; iii < num; ++iii)
   			{
   				//cout << "checking " << i << " cluster " << ii << " with " << next << " cluster # " << iii << endl;
   				if(DoObjectsIntersect(objectsVector.at(i).at(ii),objectsVector.at(next).at(iii))){
@@ -353,6 +373,9 @@ int main (int argc, char** argv)
   					
   					objectsVector.at(i).at(ii).need_merging = true; // Remove this later...
   					objectsVector.at(next).at(iii).need_merging = true;
+
+  					object merge = MergeObjects(objectsVector.at(i).at(ii),objectsVector.at(next).at(iii));
+  					objectsVector.at(next).push_back(merge);
   				}
   			}
   		}
@@ -417,7 +440,7 @@ int main (int argc, char** argv)
 	  		    	object obj = objectsVector.at(i).at(ii);
 	  		    	
 	  		    	if(obj.need_merging){
-	  		    		viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 0.0,1.0,0.0, str ,0);
+	  		    		//viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 0.0,1.0,0.0, str ,0);
 	  		    	}
 	  		    	else{
 	  		    		viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,0.0,0.0, str ,0);
