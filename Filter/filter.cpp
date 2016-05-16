@@ -35,7 +35,7 @@
 struct object{
 		pcl::PointXYZ minPt;
 		pcl::PointXYZ maxPt;
-		bool need_merging;
+		bool remove;
 };
 
 bool DoObjectsIntersect(object a, object b) {
@@ -69,11 +69,12 @@ int main (int argc, char** argv)
   bool visualization = false;
   bool lines = false;
   bool dbscan = false;
+  bool txt = false;
   int nth_point = 5; // five is default
   double eps = 0.5; // epsilon for clustering default 0.6 for the
   int minCl = 50;
 
-  std::string infile = "../../BinAndTxt/";
+  std::string infile = "../../Dataframes_txt/";
   std::string file = "0000000021.bin";
 
   // --------------------------------------
@@ -98,7 +99,9 @@ int main (int argc, char** argv)
 				} else if(std::strcmp(argv[i], "-m") == 0){
 					minCl = atoi(argv[i+1]);
 				} else if(std::strcmp(argv[i], "-i") == 0){
-				file.assign(argv[i+1]);                                    
+					file.assign(argv[i+1]);
+				} else if(std::strcmp(argv[i], "-t") == 0){
+					txt = true;                                    
                            
             }
             //std::cout << argv[i] << " ";
@@ -118,31 +121,47 @@ int main (int argc, char** argv)
   std::vector<pcl::PointXYZ> points;
 
 
-	// load point cloud
-	fstream input(infile.c_str(), ios::in | ios::binary);
-	if(!input.good()){
-		cerr << "Could not read file: " << infile << endl;
-		exit(EXIT_FAILURE);
-	}
-	input.seekg(0, ios::beg);
+	if(!txt){ // Binary
+		// load point cloud
+		fstream input(infile.c_str(), ios::in | ios::binary);
+		if(!input.good()){
+			cerr << "Could not read file: " << infile << endl;
+			exit(EXIT_FAILURE);
+		}
 
-	//pcl::PointCloud<PointXYZ>::Ptr cloud (new pcl::PointCloud<PointXYZ>);
+		input.seekg(0, ios::beg);
 
-	float ignore;
-	int i;
-	for (i=0; input.good() && !input.eof(); i++) {
-		pcl::PointXYZ point;
-		input.read((char *) &point.x, 3*sizeof(float));
-		input.read((char *) &ignore, sizeof(float));
-		if(i%nth_point == 0)cloud->points.push_back(point);
-	}
-	input.close();
+		float ignore;
+		int i;
+		for (i=0; input.good() && !input.eof(); i++) {
+			pcl::PointXYZ point;
+			input.read((char *) &point.x, 3*sizeof(float));
+			input.read((char *) &ignore, sizeof(float));
+			if(i%nth_point == 0)cloud->points.push_back(point);
+		}
+		input.close();
 
-	float percent = ((float)(i/nth_point))/i;
+		float percent = ((float)(i/nth_point))/i;
 
-	//cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
-
-	/*
+		//cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
+	}else{
+		//  READ TXT INSTEAD OF BIN =======================================================================================
+		FILE* f = fopen(infile.c_str(), "r");
+		if (NULL == f) {
+		   printf("Failed to open file");
+		   return 0;
+		}
+		
+		int i = 0;
+		float intensity;
+		pcl::PointXYZ p;
+		while(fscanf(f,"%f %f %f %f\n", &p.x, &p.y, &p.z, &intensity) == 4) {
+			if(i%nth_point == 0) cloud->points.push_back(p);
+			i++;
+		}
+		//cout << "file have " << i << " points" << endl;
+		fclose(f);
+	}          
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
@@ -200,7 +219,7 @@ int main (int argc, char** argv)
     //}else{
     	//Ignore this point
     //}
-  }*/
+  }
 
   //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
 
@@ -224,7 +243,7 @@ int main (int argc, char** argv)
   }
   int ii = 0;
   std::vector<pcl::PointXYZ> cluster_vector;
-  //for(int ii = 0 ; ii < v.size(); ii++){
+  for(int ii = 0 ; ii < v.size(); ii++){
 
   	  tt.tic();
 
@@ -236,18 +255,18 @@ int main (int argc, char** argv)
 	  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
 	  pcl::PCDWriter writer;
-	  seg.setEpsAngle( 20.0f * (M_PI/180.0f) ); // Perfect value! 
+	  seg.setEpsAngle( 15.0f * (M_PI/180.0f) ); // Perfect value! 
 	  seg.setAxis(axis);
 	  seg.setOptimizeCoefficients (true);
 	  seg.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
 	  seg.setDistanceThreshold (0.25); // 0.3
-	  seg.setInputCloud (cloud); 					//change input cloud later 
+	  seg.setInputCloud (v.at(ii)); 					//change input cloud later 
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
 	  pcl::ExtractIndices<pcl::PointXYZ> extract;
-	  extract.setInputCloud (cloud);
+	  extract.setInputCloud (v.at(ii));
 	  extract.setIndices (inliers);
 	  extract.setNegative (false);
 	  // Get the points associated with the planar surface
@@ -285,7 +304,7 @@ int main (int argc, char** argv)
 		    
 		    
 		    object obj;
-		    obj.need_merging = false;
+		    obj.remove = false;
 	 		pcl::getMinMax3D (*cloud_cluster, obj.minPt, obj.maxPt);
 	 		objectsVector.at(ii).push_back(obj);
 	 	
@@ -297,7 +316,7 @@ int main (int argc, char** argv)
 		  int exe_time = tt.toc();
 		  //cout << "Done in " << exe_time << " ms.\t";
 		  //cout << j << endl;
-		  cout << exe_time << endl;
+		  //cout << exe_time << endl;
 		  times.push_back(exe_time);
 
 		  cloud_filtered->points.clear();
@@ -349,7 +368,7 @@ int main (int argc, char** argv)
 			cluster_vector.clear();
 		  	//cout << (buffer_size/6) << " clusters." << endl;
 		}
-  //} End sector for
+  } //End sector for
 
   /*int sum = 0;
   for (int i = 0; i < times.size(); ++i)
@@ -363,33 +382,35 @@ int main (int argc, char** argv)
   	/* Merging of boxes*/
   	int sectors = objectsVector.size(); // Number of sectors
 
-  	/*for (int i = 0; i < sectors; ++i)
+  	for (int i = 0; i < sectors; ++i)
   	{	
   		
-  		for (int ii = 0; ii < objectsVector.at(i).size(); ++ii)
+  		int num = objectsVector.at(i).size();
+
+  		for (int ii = 0; ii < num; ++ii)
   		{
   			int next = i+1;	
   			if(i == 7) next = 0;
 
-  			int num = objectsVector.at(next).size();
 
-  			for (int iii = 0; iii < num; ++iii)
-  			{
+  			//for (int iii = 0; iii < objectsVector.at(next).size(); ++iii)
+  			//{
   				//cout << "checking " << i << " cluster " << ii << " with " << next << " cluster # " << iii << endl;
-  				if(DoObjectsIntersect(objectsVector.at(i).at(ii),objectsVector.at(next).at(iii))){
+  			//	if(DoObjectsIntersect(objectsVector.at(i).at(ii),objectsVector.at(next).at(iii))){
   					
   					// Merge code goes here ========= 
   					
 
-  					objectsVector.at(i).at(ii).need_merging = true; // Remove this later...
-  					objectsVector.at(next).at(iii).need_merging = true;
+  					//objectsVector.at(i).erase(objectsVector.at(i).begin() + ii); 
+  					//objectsVector.at(next).erase(objectsVector.at(next).begin() + iii);
 
-  					object merge = MergeObjects(objectsVector.at(i).at(ii),objectsVector.at(next).at(iii));
-  					objectsVector.at(next).push_back(merge);
-  				}
-  			}
+  					//object merge = MergeObjects(objectsVector.at(i).at(ii),objectsVector.at(next).at(iii));
+  					//objectsVector.at(next).push_back(merge);
+  			//	}
+  			//}
   		}
-  	}*/
+  	}
+
 
   if(visualization){
 	  // ----------------------------------------------------------------------------------------------------------
@@ -448,20 +469,18 @@ int main (int argc, char** argv)
 	  		    	pcl::PointXYZ middle;
 
 	  		    	object obj = objectsVector.at(i).at(ii);
+
+  		    		viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,0.0,0.0, str ,0);
+  		    		ss.str("");
+    				ss << counts;
+    				middle = pcl::PointXYZ(((obj.minPt.x+obj.maxPt.x)/2),((obj.minPt.y+obj.maxPt.y)/2),((obj.minPt.z+obj.maxPt.z)/2));
+    				viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
+    				counts++;
 	  		    	
-	  		    	if(obj.need_merging){
-	  		    		//viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 0.0,1.0,0.0, str ,0);
-	  		    	}
-	  		    	else{
-	  		    		viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,0.0,0.0, str ,0);
-	  		    	}
-	  		    	ss.str("");
-	    			ss << counts;
-	    			middle = pcl::PointXYZ(((obj.minPt.x+obj.maxPt.x)/2),((obj.minPt.y+obj.maxPt.y)/2),((obj.minPt.z+obj.maxPt.z)/2));
-	    			viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
-	    			counts++;
+	  		    	
 		  		}
 		  	}
+		  	cout << counts << endl;
 	  //------------------------------------------------------------------------------------------------------------
  		}else{
  			 /*for(int h = 0 ; h < cluster_vector.size(); h++)
