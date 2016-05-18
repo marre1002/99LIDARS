@@ -146,6 +146,8 @@ int main(int argc, char **argv) {
 		// Now receive the message with the allocated buffer
 		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
+		std::cout << "I have received some boxes." << endl;
+
 		// Loop through all received numbers from this sector and create object representations
 		for(int j = 0; j < number_amount; j+6){
 			object c;
