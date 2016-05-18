@@ -149,15 +149,20 @@ int main(int argc, char **argv) {
 		std::cout << "I have received some boxes." << endl;
 
 		// Loop through all received numbers from this sector and create object representations
-		for(int j = 0; j < number_amount; j+6){
+		for(int j = 0; j < number_amount; j++){
 			object c;
-			c.minPt = pcl::PointXYZ(number_buf[j], number_buf[j+1], number_buf[j+2]);
-			c.maxPt = pcl::PointXYZ(number_buf[j+3], number_buf[j+4], number_buf[j+5]);
 
+			if(j % 6 == 0){
+				
+				c.minPt = pcl::PointXYZ(number_buf[j], number_buf[j+1], number_buf[j+2]);
+				c.maxPt = pcl::PointXYZ(number_buf[j+3], number_buf[j+4], number_buf[j+5]);
+
+				objects.push_back(c);
+			}
 
 
 			// Add the stinking object
-			objects.push_back(c);
+			
 
 		}
 
