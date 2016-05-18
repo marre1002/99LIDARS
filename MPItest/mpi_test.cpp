@@ -8,6 +8,7 @@
 #include "filter.h"
 #include "segmentation.h"
 
+#define OFFSET 0.08
 
 using namespace pcl;
 using namespace std;
@@ -16,6 +17,37 @@ static int numprocs;
 
 bool less_vectors(const vector<float>& a,const vector<float>& b) {
    return a.size() > b.size();
+}
+
+struct object{
+		pcl::PointXYZ minPt;
+		pcl::PointXYZ maxPt;
+		bool remove;
+};
+
+bool DoObjectsIntersect(object a, object b) {
+  	if(a.minPt.x > (OFFSET+b.maxPt.x)) return false;
+  	if((a.maxPt.x+OFFSET) < b.minPt.x) return false;
+  	if(a.minPt.y > (OFFSET+b.maxPt.y)) return false;
+  	if((a.maxPt.y+OFFSET) < b.minPt.y) return false;
+  	return true;
+}
+
+object MergeObjects(object a, object b){
+	object c;
+	float LeftCornerX = std::min(a.minPt.x, b.minPt.x);
+	float LeftCornerY = std::min(a.minPt.y, b.minPt.y);
+	float LeftCornerZ = std::min(a.minPt.z, b.minPt.z);
+
+	float RightCornerX = std::max(a.maxPt.x, b.maxPt.x);
+	float RightCornerY = std::max(a.maxPt.y, b.maxPt.y);
+	float RightCornerZ = std::max(a.maxPt.z, b.maxPt.z);
+
+
+	c.minPt = pcl::PointXYZ(LeftCornerX, LeftCornerY, LeftCornerZ);
+	c.maxPt = pcl::PointXYZ(RightCornerX, RightCornerY, RightCornerZ);
+
+	return c;
 }
 
 /*************************************************************************************
@@ -64,19 +96,23 @@ int main(int argc, char **argv) {
 ********************************************************************************************/
 	if(my_rank == 0){ 
 
-	  int read_file;
-	  pcl::console::TicToc tt;
-	  tt.tic();	  
-	  //std::vector<std::vector<float> > floats;
-	  int m_tag = 0; // MPI message tag
+	 int read_file;
+	 //Dedicated object vector for box collection.
+	 std::vector<object> objects; 
+	 //Define float buffer here.
+
+	 pcl::console::TicToc tt;
+	 tt.tic();	  
+	 //std::vector<std::vector<float> > floats;
+	 int m_tag = 0; // MPI message tag
 
 	  
 
-	  // Read file and create 8 point clouds
-	  // Nth_point will be kept from the data e.g. 3, every third point will be used
-	  Filters filt;
-	  filt.read_file(infile, nth_point);
-	  filt.filter_and_slice();
+	 // Read file and create 8 point clouds
+	 // Nth_point will be kept from the data e.g. 3, every third point will be used
+	 Filters filt;
+	 filt.read_file(infile, nth_point);
+	 filt.filter_and_slice();
 
 	 read_file = tt.toc();
 
@@ -103,11 +139,42 @@ int main(int argc, char **argv) {
 		// Allocate a buffer to hold the incoming numbers
 		float* number_buf = (float*)malloc(sizeof(float) * number_amount);
 		// Now receive the message with the allocated buffer
-		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);  
+		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+		// Loop through all received numbers from this sector and create object representations
+		for(int j = 0; j < number_amount; j+6){
+			object c;
+			c.minPt = pcl::PointXYZ(number_buf[j], number_buf[j+1], number_buf[j+2]);
+			c.maxPt = pcl::PointXYZ(number_buf[j+3], number_buf[j+4], number_buf[j+5]);
+
+			// Add the stinking object
+			objects.push_back(c);
+
+		}
+
 		clusterCount = clusterCount + (number_amount/3);
-		free(number_buf);
-		//cout << "Master received " << number_amount << " values from " << status.MPI_SOURCE << endl; 
-	}
+		free(number_buf);	
+  	}
+
+  	//Initiate merging
+  	for (int i = 0; i < objects.size(); ++i)
+  	{	
+		object a = objects.at(i);
+		
+		for (int ii = i; ii < objects.size(); ++ii)
+		{
+			
+			object b = objects.at(ii);
+
+			if(DoObjectsIntersect(a,b) && i != ii){
+
+				object merge = MergeObjects(a,b);
+				objects.at(ii) = merge;
+				objects.at(i).remove = true;
+			}
+  		}
+  	}
+
 	int processing = tt.toc();
 	cout << "Read: " << filt.cloud.size() << " from " << infile << " (nth: " << nth_point <<")" << endl; 
 	cout << "Number of clusters found:\t"  << clusterCount << endl; 
