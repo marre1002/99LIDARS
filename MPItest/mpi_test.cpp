@@ -146,8 +146,6 @@ int main(int argc, char **argv) {
 		// Now receive the message with the allocated buffer
 		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-		std::cout << "I have received some boxes." << endl;
-
 		// Loop through all received numbers from this sector and create object representations
 		for(int j = 0; j < number_amount; j++){
 			object c;
@@ -159,14 +157,9 @@ int main(int argc, char **argv) {
 
 				objects.push_back(c);
 			}
-
-
-			// Add the stinking object
 			
 
 		}
-
-		std::cout << "Done collecting boxes." << endl;
 
 		clusterCount = clusterCount + (number_amount/3);
 		free(number_buf);	
@@ -191,6 +184,7 @@ int main(int argc, char **argv) {
   		}
   	}
 
+  	//Count number of merged objects.
   	int mergedobj = 0;
 	  	for (int i = 0; i < objects.size(); ++i)
   			if(!objects.at(i).remove) mergedobj++;
@@ -201,7 +195,7 @@ int main(int argc, char **argv) {
 	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 	cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	cout << "Distri, process, gather:\t\t" << processing << " ms" << endl;
-	cout << "Merging, found :\t\t" << mergedobj << " objects" << endl;
+	cout << "After merging found :\t\t" << mergedobj << " objects" << endl;
 	cout << "=========== Total: \t" << (read_file + processing) << " ms ==================" <<  endl;
 
 	
