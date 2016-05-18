@@ -158,10 +158,9 @@ int main(int argc, char **argv) {
 				objects.push_back(c);
 			}
 			
-
 		}
 
-		clusterCount = clusterCount + (number_amount/3);
+		clusterCount = clusterCount + (number_amount/6);
 		free(number_buf);	
   	}
 
