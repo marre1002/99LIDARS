@@ -109,6 +109,8 @@ int main(int argc, char **argv) {
 	 //std::vector<std::vector<float> > floats;
 	 int m_tag = 0; // MPI message tag
 
+	 std::cout << "Its a me, master." << endl;
+
 	  
 
 	 // Read file and create 8 point clouds
@@ -155,7 +157,7 @@ int main(int argc, char **argv) {
 
 		}
 
-		std::cout << "I have collected CLUSTERS!" << endl;
+
 
 		clusterCount = clusterCount + (number_amount/3);
 		free(number_buf);	
