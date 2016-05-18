@@ -79,6 +79,7 @@ int main (int argc, char** argv)
   int minCl = 50;
 
   std::string infile = "../../Dataframes_txt/";
+  //std::string infile = "../../BinAndTxt/";
   std::string file = "0000000021.bin";
 
   // --------------------------------------
@@ -163,9 +164,11 @@ int main (int argc, char** argv)
 			if(i%nth_point == 0) cloud->points.push_back(p);
 			i++;
 		}
-		cout << "file have " << i << " points" << endl;
+		//cout << "file have " << i << " points" << endl;
 		fclose(f);
-	}          
+	}       
+
+	tt.tic();   
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
@@ -222,17 +225,6 @@ int main (int argc, char** argv)
 	      }
   }
 
-  //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
-
-
-  /*int total_points = 0;
-  for(int k = 0 ; k < v.size(); k++){
-  	total_points += v.at(k)->points.size();
-  	std::cout << "Sector " << k <<  " have: " << v.at(k)->points.size() << " points" << endl;	
-  }
-  std::cout << "All sectors:" << total_points << " points" << endl;*/
-
-  std::vector<int> times;
 
   //std::vector<std::vector<object> > objectsVector(8, vector<object>(0));
   std::vector<object> objects;  
@@ -243,8 +235,6 @@ int main (int argc, char** argv)
   std::vector<pcl::PointXYZ> cluster_vector;
 
   for(int ii = 0 ; ii < v.size(); ii++){
-
-  	  tt.tic();
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
 
@@ -312,13 +302,6 @@ int main (int argc, char** argv)
 		    cloud_cluster->points.clear();
 		  }
 
-
-		  int exe_time = tt.toc();
-		  //cout << "Done in " << exe_time << " ms.\t";
-		  //cout << j << endl;
-		  //cout << exe_time << endl;
-		  times.push_back(exe_time);
-
 		  cloud_filtered->points.clear();
 		  cloud_f->points.clear();
 		}else{ // DBSCAN CODE
@@ -372,23 +355,12 @@ int main (int argc, char** argv)
 		}
   } //End sector for
 
-  /*int sum = 0;
-  for (int i = 0; i < times.size(); ++i)
-  {
-  	 sum = sum + times.at(i);
-  }
-  	double avg = (sum/8);
-  	cout << "All sectors: " << sum <<" ms, " << "===== Avg time: "<< avg << " ms ================" << endl;  
-	*/
-
-  	// Begin rectangle intersection
-  	// Sort the list of Xmin and Xmax and place them in eps
 
   	/* Merging of boxes*/
 
   	std::vector<object> objv;
 
-  	cout << "before merging: " << objects.size() << endl;
+  	//cout << "before merging: " << objects.size() << endl;
 
   	for (int i = 0; i < objects.size(); ++i)
   	{	
@@ -493,11 +465,12 @@ int main (int argc, char** argv)
   	}else{
 	  	
 	  	//count all clusters
-	  	int counts = 0;
-	  	for (int i = 0; i < objects.size(); ++i)
-  			if(!objects.at(i).remove) counts++;
+	  	//int counts = 0;
+	  	//for (int i = 0; i < objects.size(); ++i)
+  		//	if(!objects.at(i).remove) counts++;
 
-		cout << counts << endl;
+		cout << tt.toc();
+		//cout << counts;
 	  
   	}
 

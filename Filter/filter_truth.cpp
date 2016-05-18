@@ -71,6 +71,7 @@ int main (int argc, char** argv)
 {
 
   bool visualization = false;
+  bool merge = false;
   bool lines = false;
   bool dbscan = false;
   bool read_binary = true;
@@ -107,6 +108,8 @@ int main (int argc, char** argv)
 					file.assign(argv[i+1]);
 				} else if(std::strcmp(argv[i], "-t") == 0){
 					read_binary = false;
+				} else if(std::strcmp(argv[i], "-x") == 0){
+					merge = false;
 				}                                    
                            
             }
@@ -169,9 +172,8 @@ int main (int argc, char** argv)
 		fclose(f);
 	}          
 
-	 std::vector<std::vector<object> > objectsVector(8, vector<object>(0));
 
-  	  tt.tic();
+  	  tt.tic(); // Start clock 
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
 
@@ -244,7 +246,7 @@ int main (int argc, char** argv)
 
 		  //int exe_time = tt.toc();
 		  //cout << "Done in " << exe_time << " ms.\t";
-		  cout << j << "\t"; // PRINT NUMBER OF CLUSTERS
+		  //cout << j << "\t"; // PRINT NUMBER OF CLUSTERS
 		  //cout << exe_time << endl;
 		  
 		}else{ // DBSCAN CODE
@@ -294,41 +296,43 @@ int main (int argc, char** argv)
 				}
 			}
 			cluster_vector.clear();
-		  	cout << db_numberOfClusters << "\t";
+		  	//cout << db_numberOfClusters << "\t";
 		}
 
 		std::vector<object> objv;
 
   
 
-  	for (int i = 0; i < objects.size(); ++i)
-  	{	
-		object a = objects.at(i);
-		
-		for (int ii = i; ii < objects.size(); ++ii)
-		{
+	if(merge){
+	  	for (int i = 0; i < objects.size(); ++i)
+	  	{	
+			object a = objects.at(i);
 			
-			object b = objects.at(ii);
+			for (int ii = i; ii < objects.size(); ++ii)
+			{
+				
+				object b = objects.at(ii);
 
-			if(DoObjectsIntersect(a,b) && i != ii){
+				if(DoObjectsIntersect(a,b) && i != ii){
 
-				object merge = MergeObjects(a,b);
-				objv.push_back(a);
-				objv.push_back(b);
-				objects.at(ii) = merge;
-				objects.at(i).remove = true;
-			}
-  		}
+					object merge = MergeObjects(a,b);
+					objv.push_back(a);
+					objv.push_back(b);
+					objects.at(ii) = merge;
+					objects.at(i).remove = true;
+				}
+	  		}
+	  	}
   	}
-
 
   	int count = 0;
   	for (int i = 0; i < objects.size(); ++i)
-			{
+	{
 	  		object obj = objects.at(i);
 	  			if(!obj.remove) count++;
-	  	}
-	cout << count;
+	 }
+	//cout << count;
+	cout << tt.toc(); // time taken
 
   return (0);
 }
