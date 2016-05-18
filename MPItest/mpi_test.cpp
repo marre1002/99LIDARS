@@ -82,9 +82,12 @@ int main(int argc, char **argv) {
 	}
 
 	infile.append(file);
-	  //cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
+	//cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
 
 	// MPI initializations
+
+	std::cout << "Hue" << endl;
+
 	MPI_Status status;
 	MPI_Init (&argc, &argv);
 	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
@@ -175,12 +178,17 @@ int main(int argc, char **argv) {
   		}
   	}
 
+  	int mergedobj = 0;
+	  	for (int i = 0; i < objects.size(); ++i)
+  			if(!objects.at(i).remove) mergedobj++;
+
 	int processing = tt.toc();
 	cout << "Read: " << filt.cloud.size() << " from " << infile << " (nth: " << nth_point <<")" << endl; 
 	cout << "Number of clusters found:\t"  << clusterCount << endl; 
 	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 	cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	cout << "Distri, process, gather:\t\t" << processing << " ms" << endl;
+	cout << "Merging, found :\t\t" << mergedobj << " objects" << endl;
 	cout << "=========== Total: \t" << (read_file + processing) << " ms ==================" <<  endl;
 
 	
