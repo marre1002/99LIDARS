@@ -154,14 +154,14 @@ int main(int argc, char **argv) {
 			c.minPt = pcl::PointXYZ(number_buf[j], number_buf[j+1], number_buf[j+2]);
 			c.maxPt = pcl::PointXYZ(number_buf[j+3], number_buf[j+4], number_buf[j+5]);
 
-			std::cout << "Prepare for spam, sir." << endl;
+
 
 			// Add the stinking object
 			objects.push_back(c);
 
 		}
 
-
+		std::cout << "Done collecting boxes." << endl;
 
 		clusterCount = clusterCount + (number_amount/3);
 		free(number_buf);	
