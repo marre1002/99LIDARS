@@ -78,8 +78,10 @@ int main (int argc, char** argv)
   double eps = 0.5; // epsilon for clustering default 0.6 for the
   int minCl = 50;
 
+  std::vector<object> objects;
+
   std::string infile = "../../Dataframes_txt/";
-  std::string file = "0000000021.bin";
+  std::string file = "default";
 
   // --------------------------------------
   // -----Parse Command Line Arguments-----
@@ -163,86 +165,11 @@ int main (int argc, char** argv)
 			if(i%nth_point == 0) cloud->points.push_back(p);
 			i++;
 		}
-		cout << "file have " << i << " points" << endl;
+		//cout << "file have " << i << " points" << endl;
 		fclose(f);
 	}          
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud3 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud4 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud5 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud6 (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud7 (new pcl::PointCloud<pcl::PointXYZ>);
-
-  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr > v;
-  v.push_back(cloud0);
-  v.push_back(cloud1);
-  v.push_back(cloud2);
-  v.push_back(cloud3);
-  v.push_back(cloud4);
-  v.push_back(cloud5);
-  v.push_back(cloud6);
-  v.push_back(cloud7);
-
-  // Devide the dataset and keep every n:th point (setting it to 1 will include all points)
-  //int nth_point = 3;
-  double zero = 0.0000000;
-  for (int iii = 0; iii < static_cast<int> (cloud->size ()); ++iii){ 
-   // if((iii%nth_point) == 0){
-    	if(cloud->points[iii].x > zero){
-	          if(cloud->points[iii].y > zero){
-	              if(cloud->points[iii].y > cloud->points[iii].x){
-	                  cloud0->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	              }else{
-	                  cloud1->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	              }
-	          }else{
-	              if((abs(cloud->points[iii].y)) > cloud->points[iii].x){
-	                  cloud3->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	              }else{
-	                  cloud2->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	              }
-	          }    
-	      }else{
-	          if(cloud->points[iii].y > zero){
-	              if(cloud->points[iii].y > (abs(cloud->points[iii].x))){
-	                      cloud7->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	                  }else{
-	                      cloud6->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	                  }
-	              }else{
-	                  if(cloud->points[iii].y > cloud->points[iii].x){
-	                      cloud5->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	                  }else{
-	                      cloud4->points.push_back (pcl::PointXYZ (cloud->points[iii].x,cloud->points[iii].y,cloud->points[iii].z));
-	                  }
-	          }
-	      }
-  }
-
-  //pcl::io::savePCDFileASCII ("cloud1.pcd", cloud1);
-
-
-  /*int total_points = 0;
-  for(int k = 0 ; k < v.size(); k++){
-  	total_points += v.at(k)->points.size();
-  	std::cout << "Sector " << k <<  " have: " << v.at(k)->points.size() << " points" << endl;	
-  }
-  std::cout << "All sectors:" << total_points << " points" << endl;*/
-
-  std::vector<int> times;
-
-  //std::vector<std::vector<object> > objectsVector(8, vector<object>(0));
-  std::vector<object> objects;  
-
-
-  int clusters = 0;
-  int ii = 0;
-  std::vector<pcl::PointXYZ> cluster_vector;
-
-  for(int ii = 0 ; ii < v.size(); ii++){
+	 std::vector<std::vector<object> > objectsVector(8, vector<object>(0));
 
   	  tt.tic();
 
@@ -261,11 +188,11 @@ int main (int argc, char** argv)
 	  seg.setMethodType (pcl::SAC_RANSAC);
 	  seg.setMaxIterations (100);
 	  seg.setDistanceThreshold (0.25); // 0.3
-	  seg.setInputCloud (v.at(ii)); 					//change input cloud later 
+	  seg.setInputCloud (cloud); 					//change input cloud later 
 	  seg.segment (*inliers, *coefficients);
 	  // Extract the planar inliers from the input cloud
 	  pcl::ExtractIndices<pcl::PointXYZ> extract;
-	  extract.setInputCloud (v.at(ii));
+	  extract.setInputCloud (cloud);
 	  extract.setIndices (inliers);
 	  extract.setNegative (false);
 	  // Get the points associated with the planar surface
@@ -275,7 +202,10 @@ int main (int argc, char** argv)
 	  extract.setNegative (true);
 	  extract.filter (*cloud_f);
 	  *cloud_filtered = *cloud_f;
+
+	  // END OF RANSAC
 	  
+	  int db_numberOfClusters = 0;
 	  if(!dbscan){
 		  // Creating the KdTree object for the search method of the extraction
 		  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
@@ -294,7 +224,6 @@ int main (int argc, char** argv)
 		  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
 		  {
 		    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster (new pcl::PointCloud<pcl::PointXYZ>);
-		    clusters++;
 		    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
 		      cloud_cluster->points.push_back (cloud_filtered->points[*pit]); //*
 		      cloud_cluster->width = cloud_cluster->points.size ();
@@ -304,23 +233,20 @@ int main (int argc, char** argv)
 		    
 		    object obj;
 		    obj.remove = false;
-		    obj.merged = false;
 	 		pcl::getMinMax3D (*cloud_cluster, obj.minPt, obj.maxPt);
 	 		objects.push_back(obj);
+
 	 	
 	 		j++;
 		    cloud_cluster->points.clear();
 		  }
 
 
-		  int exe_time = tt.toc();
+		  //int exe_time = tt.toc();
 		  //cout << "Done in " << exe_time << " ms.\t";
-		  //cout << j << endl;
+		  cout << j << "\t"; // PRINT NUMBER OF CLUSTERS
 		  //cout << exe_time << endl;
-		  times.push_back(exe_time);
-
-		  cloud_filtered->points.clear();
-		  cloud_f->points.clear();
+		  
 		}else{ // DBSCAN CODE
 
 			tt.tic();
@@ -352,9 +278,9 @@ int main (int argc, char** argv)
 
 
 			// Calculate boxes from all the clusters found
+			std::vector<pcl::PointXYZ> cluster_vector;
+			
 			dbs.writeClusters_uf(&cluster_vector);
-
-			int num_cl = 0;
 			for (int i = 0; i < cluster_vector.size(); ++i)
 			{
 				if(i%2 == 0)
@@ -364,31 +290,16 @@ int main (int argc, char** argv)
 					obj.maxPt = cluster_vector.at(i+1);
 					obj.remove = false;
 					objects.push_back(obj);
+					db_numberOfClusters++;
 				}
 			}
-			
 			cluster_vector.clear();
-		  	//cout << (buffer_size/6) << " clusters." << endl;
+		  	cout << db_numberOfClusters << "\t";
 		}
-  } //End sector for
 
-  /*int sum = 0;
-  for (int i = 0; i < times.size(); ++i)
-  {
-  	 sum = sum + times.at(i);
-  }
-  	double avg = (sum/8);
-  	cout << "All sectors: " << sum <<" ms, " << "===== Avg time: "<< avg << " ms ================" << endl;  
-	*/
+		std::vector<object> objv;
 
-  	// Begin rectangle intersection
-  	// Sort the list of Xmin and Xmax and place them in eps
-
-  	/* Merging of boxes*/
-
-  	std::vector<object> objv;
-
-  	cout << "before merging: " << objects.size() << endl;
+  
 
   	for (int i = 0; i < objects.size(); ++i)
   	{	
@@ -411,95 +322,13 @@ int main (int argc, char** argv)
   	}
 
 
-  if(visualization){
-	  // ----------------------------------------------------------------------------------------------------------
-	  // -----Open 3D viewer and add point cloud-----
-	  //pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> grey(cloud,204, 204, 179);
-	  //pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZRGB> red(cloud, 255, 0, 0);
-  	  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-	  viewer->setBackgroundColor (0, 0, 0);
-	  viewer->addPointCloud<pcl::PointXYZ> (cloud, "source");
-	  float intz = 0.6f;
-	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, intz, intz, intz, "source");
-	  //viewer->addPointCloud<pcl::PointXYZ> (cloud_main, "main");
-	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1.0f, 0.0f, 0.0f, "main");  
-	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud with boxes");
-	  viewer->addCoordinateSystem (1.0);
-	  viewer->initCameraParameters ();
-
-	  double  pos_x = 0;
-	  double  pos_y = -10; // -13
-	  double  pos_z = 19; // 10
-	  double  up_x = 0;
-	  double  up_y = 1;
-	  double  up_z = 1;
-
-	  viewer->setCameraPosition(pos_x,pos_y,pos_z,up_x,up_y,up_z, 0); 		
-
-	  std::stringstream ss;
-	  int counts = 0;
-	  
-		/* ====== PRINTING ALL THE BOXES ========================== */
-
-  		for (int i = 0; i < objv.size(); ++i)
-			{
-	  		object obj = objv.at(i);
-  			ss << "id" << i << "t";
-			std::string str = ss.str();
-		    	
-		    	viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 0.0,0.0,0.7, str ,0);
-	    		ss.str("");
-  		}
-
-	  	for (int i = 0; i < objects.size(); ++i)
+  	int count = 0;
+  	for (int i = 0; i < objects.size(); ++i)
 			{
 	  		object obj = objects.at(i);
-	  			if(!obj.remove)
-	  			{
-		  			ss << "id" << counts << "test";
-	    			std::string str = ss.str();
-	  		    	pcl::PointXYZ middle;
-	  		    	if(obj.merged)
-  		    			viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,1.0,0.0, str ,0);
-  		    		else
-  		    			viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,0.0,0.0, str ,0);
-  		    		ss.str("");
-    				ss << counts;
-    				middle = pcl::PointXYZ(((obj.minPt.x+obj.maxPt.x)/2),((obj.minPt.y+obj.maxPt.y)/2),((obj.minPt.z+obj.maxPt.z)/2));
-    				viewer->addText3D(ss.str(),middle, 0.5,1.0,1.0,1.0,ss.str(),0);
-    				counts++;
-  		    	}
+	  			if(!obj.remove) count++;
 	  	}
-	  	cout << counts << endl;
-
-	  if(lines){
-	  	int z = -1.9;
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,0,z),0.0f,8.0f,0.0f, "aline");
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,55,z),0.0f,8.0f,0.0f, "bline");
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,0,z),0.0f,8.0f,0.0f, "cline");
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(0,-55,z),0.0f,8.0f,0.0f, "dline");
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,55,z),0.0f,8.0f,0.0f, "eline");
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,55,z),0.0f,8.0f,0.0f, "fline");
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,-55,z),0.0f,8.0f,0.0f, "gline");
-	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(-55,-55,z),0.0f,8.0f,0.0f, "hline");
-	  }
-	   //std::cout << "Found a total of: " << clusters << " clusters." << endl;
-
-	  while (!viewer->wasStopped ())
-	  {
-	    viewer->spinOnce (100);
-	    boost::this_thread::sleep (boost::posix_time::microseconds (100000));
-	  }
-  	}else{
-	  	
-	  	//count all clusters
-	  	int counts = 0;
-	  	for (int i = 0; i < objects.size(); ++i)
-  			if(!objects.at(i).remove) counts++;
-
-		cout << counts << endl;
-	  
-  	}
+	cout << count;
 
   return (0);
 }

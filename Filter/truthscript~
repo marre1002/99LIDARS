@@ -1,0 +1,48 @@
+#!/bin/sh
+
+STARTTIME=$(date +%s)
+
+# THIS NEEDS TO BE MODIFIED DEPENDING ON UNIT
+FILES=/home/martin/99LIDARS/Dataframes_txt/*
+
+
+##### All files with Euclidian, nth = 1 2 4 8  ############
+echo 'Running all files with euclidian'
+
+rm "output_euclidian.txt"
+OUTPUTF1="output_euclidian.txt"
+
+
+for file in $FILES
+do
+	echo "processing " ${file##*/} ...
+	for nth in 1 2 4 8
+	do	
+		./filter_truth -n $nth -i ${file##*/} -t >> $OUTPUTF1
+		printf "\t" >> $OUTPUTF1
+	done
+	printf "\n" >> $OUTPUTF1
+done
+
+##### All files with dbscan, nth 1 2 4 8    ###############
+
+echo "Running all files with dbscan"
+
+"output_dbscan.txt"
+OUTPUTF2="output_dbscan.txt"
+
+
+for file in $FILES
+do
+	echo 'processing ' ${file##*/} ...
+	for nth in 1 2 4 8
+	do	
+		./filter_thruth -d -n $nth -i ${file##*/} -t >> $OUTPUTF2
+		printf "\t" >> $OUTPUTF2
+	done
+	printf "\n" >> $OUTPUTF2
+done
+
+
+ENDTIME=$(date +%s)
+echo "Done in $(($ENDTIME - $STARTTIME)) seconds"

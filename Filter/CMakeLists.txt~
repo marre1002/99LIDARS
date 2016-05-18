@@ -33,9 +33,5 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-include_directories(${dbscan})
-link_directories(${dbscan})
-
-add_executable(filter_truth filter_truth.cpp dbscan/clusters.cpp dbscan/clusters.h dbscan/dbscan.cpp dbscan/dbscan.h dbscan/kdtree2.cpp dbscan/kdtree2.hpp dbscan/utils.cpp dbscan/utils.h)
-
+add_executable (filter_truth filter_truth.cpp)
 target_link_libraries (filter_truth ${PCL_LIBRARIES})
