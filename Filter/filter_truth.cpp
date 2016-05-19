@@ -109,7 +109,7 @@ int main (int argc, char** argv)
 				} else if(std::strcmp(argv[i], "-t") == 0){
 					read_binary = false;
 				} else if(std::strcmp(argv[i], "-x") == 0){
-					merge = false;
+					merge = true;
 				}                                    
                            
             }
@@ -243,18 +243,12 @@ int main (int argc, char** argv)
 		    cloud_cluster->points.clear();
 		  }
 
-
-		  //int exe_time = tt.toc();
-		  //cout << "Done in " << exe_time << " ms.\t";
-		  //cout << j << "\t"; // PRINT NUMBER OF CLUSTERS
-		  //cout << exe_time << endl;
 		  
 		}else{ // DBSCAN CODE
 
-			tt.tic();
 			int num_threads = 4;
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
-			//double eps = 0.6; // distance between points
+			eps = 1.4; // Dbscan needs another default value
 
 
 			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
