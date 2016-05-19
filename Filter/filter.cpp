@@ -168,7 +168,7 @@ int main (int argc, char** argv)
 		fclose(f);
 	}       
 
-	tt.tic();   
+	tt.tic();   // Start time mesurment
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud0 (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
@@ -306,10 +306,9 @@ int main (int argc, char** argv)
 		  cloud_f->points.clear();
 		}else{ // DBSCAN CODE
 
-			tt.tic();
 			int num_threads = 4;
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
-			//double eps = 0.6; // distance between points
+			eps = 1.6; // Dbscan needs another default value
 
 
 			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
@@ -345,6 +344,7 @@ int main (int argc, char** argv)
 					object obj;
 					obj.minPt = cluster_vector.at(i);
 					obj.maxPt = cluster_vector.at(i+1);
+					obj.merged = false;
 					obj.remove = false;
 					objects.push_back(obj);
 				}
