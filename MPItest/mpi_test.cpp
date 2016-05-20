@@ -60,15 +60,14 @@ object MergeObjects(object a, object b){
 int main(int argc, char **argv) {
 	int my_rank = 0;
 
-	bool textFile = true;
 	bool dbscan = false;
 	int nth_point = 4; // five is default
 	int num_files = 1;
 	double eps = 0.5;
 	int minCl = 50;
 	
-	std::string infile = "../../Dataframes_txt/";
-	std::string file = "0000000000.txt";
+	std::string infile = "../../Dataframes/";
+	std::string file = "0000000000.bin";
 
 	for (int i = 1; i < argc; i++) { 
         if (i != argc) // Check that we haven't finished parsing already
@@ -109,7 +108,7 @@ int main(int argc, char **argv) {
 	 // Read file and create 8 point clouds
 	 // Nth_point will be kept from the data e.g. 3, every third point will be used
 	 Filters filt;
-	 filt.read_file(infile, nth_point, textFile);
+	 filt.read_file(infile, nth_point);
 	 filt.filter_and_slice();
 
 	 read_file = tt.toc();
@@ -119,11 +118,11 @@ int main(int argc, char **argv) {
 	 std::sort(filt.floats.begin(),filt.floats.end(),less_vectors);
 	
 	tt.tic(); // Distributing, processing, and cathering
-	for(int i = 2; i < numprocs; i++){ 
+	for(int i = 0; i < SECTORS; i++){ 
 	   int bsize = filt.floats.at(i).size();
-	   MPI_Send(&bsize, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+	   MPI_Send(&bsize, 1, MPI_INT, (i+2), 0, MPI_COMM_WORLD);
 	   float *f = &filt.floats.at(i)[0];
-	   MPI_Send(f, bsize, MPI_FLOAT, i, 0, MPI_COMM_WORLD);
+	   MPI_Send(f, bsize, MPI_FLOAT, (i+2), 0, MPI_COMM_WORLD);
 	}
 	int sending = tt.toc(); 
 

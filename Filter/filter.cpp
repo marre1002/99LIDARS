@@ -78,9 +78,9 @@ int main (int argc, char** argv)
   double eps = 0.5; // epsilon for clustering default 0.6 for the
   int minCl = 50;
 
-  std::string infile = "../../Dataframes_txt/";
-  //std::string infile = "../../BinAndTxt/";
-  std::string file = "0000000021.bin";
+  //std::string infile = "../../Dataframes_txt/";
+  std::string infile = "../../BinAndTxt/";
+  std::string file = "0000000000.bin";
 
   // --------------------------------------
   // -----Parse Command Line Arguments-----
@@ -136,12 +136,10 @@ int main (int argc, char** argv)
 
 		input.seekg(0, ios::beg);
 
-		float ignore;
 		int i;
 		for (i=0; input.good() && !input.eof(); i++) {
 			pcl::PointXYZ point;
 			input.read((char *) &point.x, 3*sizeof(float));
-			input.read((char *) &ignore, sizeof(float));
 			if(i%nth_point == 0)cloud->points.push_back(point);
 		}
 		input.close();

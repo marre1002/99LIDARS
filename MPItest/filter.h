@@ -25,7 +25,7 @@ class Filters
 		//Filters():m_pts(NULL),m_kdtree(NULL){ }
 		Filters();
 
-		int     read_file(std::string str, int nth_point, bool txt);
+		int     read_file(std::string str, int nth_point);
 		int     filter_and_slice();
 		
 };
