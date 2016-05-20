@@ -35,10 +35,10 @@ public:
 	Segmentation();
 
 	int   build_cloud(float *f, int size);
-	int   build_cloud_two(float*, int size);
+	int   build_cloud_two(float* fs, int size);
 	int   ransac(double threshold, int iterations);
 	int   euclidian(float *f, double eps, int minCl);
-	int   dbscan(std::vector<std::vector<float> > *floats);
+	int   dbscan(float *floats);
 
 public:
 	//Class point cloud

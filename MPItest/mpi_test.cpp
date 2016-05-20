@@ -246,12 +246,15 @@ int main(int argc, char **argv) {
 	 	//cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
 	 	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
 
+	 	
 	 	float buffer[200];
-	 	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
-
-		//Send back boxes of found clusters to master
-		//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian 
+	 	if(dbscan){
+	 		int bsize = seg.dbscan(buffer); // Returns size of float buffer
+	 		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD); // used with db scan 
+	 	}else{
+	 		int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
+	 		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian
+	 	}
 	}
 }
 //******************************************************************************************************

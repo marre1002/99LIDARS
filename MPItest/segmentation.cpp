@@ -129,12 +129,12 @@ int Segmentation::euclidian(float *f, double eps, int minCl)
 	return nn; 	// Size of flaot buffer		
 }
 
-int Segmentation::dbscan(std::vector<std::vector<float> > *floats)
+int Segmentation::dbscan(float *floats)
 {
 
 	int num_threads = 4;
 	int minPts = 30; // minimal amout of points in order to be considered a cluster
-	double eps = 0.5; // distance between points
+	double eps = 1.0; // distance between points
 
 
 	omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
@@ -160,8 +160,8 @@ int Segmentation::dbscan(std::vector<std::vector<float> > *floats)
 
 
 	// Calculate boxes from all the clusters found
-	float c_buff [200];
-	int buffer_size = dbs.writeClusters_uf(c_buff);
+	//float c_buff [200];
+	int buffer_size = dbs.writeClusters_uf(floats);
 	
-	return 0;		
+	return buffer_size;		
 }
