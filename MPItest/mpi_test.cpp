@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
 	 	 zeros.append(os.str());
 	 	 zeros.append(bin);
 	 	 infile.append(zeros);
+	 	 os << "";
 	 	 if(k > 9)
 	 	 	infile = infile.substr(1,infile.length());
 
@@ -134,7 +135,6 @@ int main(int argc, char **argv) {
 			bool nextfile;	
 			MPI_Recv(&nextfile, 1, MPI_INT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			cout << " in " << tt.toc() << " ms"<< endl;
-			os << "";
 		}
 		
 		
