@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 	 std::sort(filt.floats.begin(),filt.floats.end(),less_vectors);
 	
 	tt.tic(); // Distributing, processing, and cathering
-	for(int i = 0; i < SECTORS ; i++){ 
+	for(int i = 2; i < numprocs; i++){ 
 	   int bsize = filt.floats.at(i).size();
 	   MPI_Send(&bsize, 1, MPI_INT, (i+1), 0, MPI_COMM_WORLD);
 	   float *f = &filt.floats.at(i)[0];
@@ -129,8 +129,6 @@ int main(int argc, char **argv) {
 
 	// WAIT FOR ACK FROM MERGER TO START AGAIN
 	
-	
-
 	int processing = tt.toc();
 	cout << "Read: " << filt.cloud.size() << " from " << infile << " (nth: " << nth_point <<")" << endl; 
 	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
