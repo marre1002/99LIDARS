@@ -9,6 +9,10 @@
 #include "segmentation.h"
 
 #define OFFSET 0.08
+#define SECTORS 8
+#define FILE_READ_PROCESS 0
+#define RECEIVER_PROCESS 1
+
 
 using namespace pcl;
 using namespace std;
@@ -56,16 +60,18 @@ object MergeObjects(object a, object b){
 int main(int argc, char **argv) {
 	int my_rank = 0;
 
+	bool textFile = true;
 	bool dbscan = false;
-	int nth_point = 5; // five is default
-	double eps = 0.6; // epsilon for clustering default 0.6 for the
-	int minCl = 30;
+	int nth_point = 4; // five is default
+	int num_files = 1;
+	double eps = 0.5;
+	int minCl = 50;
 	
-	std::string infile = "../../BinAndTxt/";
-	std::string file = "0000000021.bin";
+	std::string infile = "../../Dataframes_txt/";
+	std::string file = "0000000000.txt";
 
 	for (int i = 1; i < argc; i++) { 
-        if (i + 1 != argc) // Check that we haven't finished parsing already
+        if (i != argc) // Check that we haven't finished parsing already
             if(std::strcmp(argv[i], "-d") == 0) {
                 dbscan = true;
             } else if(std::strcmp(argv[i], "-n") == 0){
@@ -76,18 +82,14 @@ int main(int argc, char **argv) {
 			} else if(std::strcmp(argv[i], "-m") == 0){
 				minCl = atoi(argv[i+1]);  
 			}else if(std::strcmp(argv[i], "-i") == 0){
-				file.assign(argv[i+1]);                                    
+				num_files = atoi(argv[i+1]);
         }
         //std::cout << argv[i] << " ";
 	}
 
-	infile.append(file);
-	//cout << endl << "Arg, n: " << nth_point << " eps: " << eps << " minCl: " << minCl << endl;
+	//infile.append(file);
 
 	// MPI initializations
-
-
-
 	MPI_Status status;
 	MPI_Init (&argc, &argv);
 	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
@@ -97,41 +99,55 @@ int main(int argc, char **argv) {
 /*******************************************************************************************
 *		Master runs this code
 ********************************************************************************************/
-	if(my_rank == 0){ 
+	if(my_rank == FILE_READ_PROCESS){ 
 
 	 int read_file;
-	 //Dedicated object vector for box collection.
-	 std::vector<object> objects; 
-	 //Define float buffer here.
 
 	 pcl::console::TicToc tt;
 	 tt.tic();	  
-	 //std::vector<std::vector<float> > floats;
-	 int m_tag = 0; // MPI message tag
 
 	 // Read file and create 8 point clouds
 	 // Nth_point will be kept from the data e.g. 3, every third point will be used
 	 Filters filt;
-	 filt.read_file(infile, nth_point);
+	 filt.read_file(infile, nth_point, textFile);
 	 filt.filter_and_slice();
 
 	 read_file = tt.toc();
 
+	 // Sort the slices in decending order so the one with highest amount of points
+	 // gets processed first
 	 std::sort(filt.floats.begin(),filt.floats.end(),less_vectors);
-
-	int sectors = 8;
 	
-	 tt.tic(); // Distributing, processing, and cathering
-	for(int i = 0; i < sectors ; i++){ 
+	tt.tic(); // Distributing, processing, and cathering
+	for(int i = 0; i < SECTORS ; i++){ 
 	   int bsize = filt.floats.at(i).size();
-	   MPI_Send(&bsize, 1, MPI_INT, (i+1), m_tag, MPI_COMM_WORLD);
+	   MPI_Send(&bsize, 1, MPI_INT, (i+1), 0, MPI_COMM_WORLD);
 	   float *f = &filt.floats.at(i)[0];
-	   MPI_Send(f, bsize, MPI_FLOAT, (i+1), m_tag, MPI_COMM_WORLD);
+	   MPI_Send(f, bsize, MPI_FLOAT, (i+1), 0, MPI_COMM_WORLD);
 	}
-	 int sending = tt.toc(); 
+	int sending = tt.toc(); 
+
+	// WAIT FOR ACK FROM MERGER TO START AGAIN
 	
+	
+
+	int processing = tt.toc();
+	cout << "Read: " << filt.cloud.size() << " from " << infile << " (nth: " << nth_point <<")" << endl; 
+	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
+	cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
+	cout << "===  = ==   === ==  ===  == ==   ==  ===   ===   ===" <<  endl;
+
+
+/********************************************************************************************************
+*		Collector node runs this code, merges the result and saves to file if specified
+********************************************************************************************************/
+}else if(my_rank == RECEIVER_PROCESS){
+	
+	//Dedicated object vector for box collection.
+	 std::vector<object> objects; 
+
 	int clusterCount = 0;
-	for(int i = 0; i < sectors ; i++){ 
+	for(int i = 0; i < SECTORS ; i++){ 
 		int number_amount;
 		MPI_Status status;
 		MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
@@ -145,15 +161,11 @@ int main(int argc, char **argv) {
 		// Loop through all received numbers from this sector and create object representations
 		for(int j = 0; j < number_amount; j++){
 			object c;
-
 			if(j % 6 == 0){
-				
 				c.minPt = pcl::PointXYZ(number_buf[j], number_buf[j+1], number_buf[j+2]);
 				c.maxPt = pcl::PointXYZ(number_buf[j+3], number_buf[j+4], number_buf[j+5]);
-
 				objects.push_back(c);
 			}
-			
 		}
 
 		clusterCount = clusterCount + (number_amount/6);
@@ -164,12 +176,9 @@ int main(int argc, char **argv) {
   	for (int i = 0; i < objects.size(); ++i)
   	{	
 		object a = objects.at(i);
-		
 		for (int ii = i; ii < objects.size(); ++ii)
-		{
-			
+		{	
 			object b = objects.at(ii);
-
 			if(DoObjectsIntersect(a,b) && i != ii){
 
 				object merge = MergeObjects(a,b);
@@ -180,49 +189,51 @@ int main(int argc, char **argv) {
   	}
 
   	//Count number of merged objects.
-  	int mergedobj = 0;
+  	int clusters = 0;
 	  	for (int i = 0; i < objects.size(); ++i)
-  			if(!objects.at(i).remove) mergedobj++;
+  			if(!objects.at(i).remove) clusters++;
 
-	int processing = tt.toc();
-	cout << "Read: " << filt.cloud.size() << " from " << infile << " (nth: " << nth_point <<")" << endl; 
-	cout << "Number of clusters found:\t"  << clusterCount << endl; 
-	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
-	cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
-	cout << "Distri, process, gather:\t\t" << processing << " ms" << endl;
-	cout << "After merging found :\t\t" << mergedobj << " objects" << endl;
-	cout << "=========== Total: \t" << (read_file + processing) << " ms ==================" <<  endl;
+  	cout << "Collector node received " << clusters << endl;
 
-	
+  	// TELL FILE_READER THAT WE'RE DONE
+
+
 /********************************************************************************************************
 *		Workers run this code
 ********************************************************************************************************/
-}else if(my_rank > 0){ 
+}else if(my_rank > 1){ 
 
 	pcl::console::TicToc tt;
 
 
-   float buff [80000]; 
+   /*float buff [80000]; 
    int count;
-   MPI_Recv(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-   MPI_Recv(&buff, count, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  
- 	Segmentation seg;
- 	seg.build_cloud(buff, count);
+   MPI_Recv(&count, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   MPI_Recv(&buff, count, MPI_FLOAT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  	*/
+   	MPI_Status status;
+   	int number_amount;
+	MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+	MPI_Get_count(&status, MPI_FLOAT, &number_amount);
 
- 	//cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
+	// Allocate a buffer to hold the incoming numbers
+	float* number_buf = (float*)malloc(sizeof(float) * number_amount);
+	// Now receive the message with the allocated buffer
+	MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+ 	Segmentation seg;
+ 	seg.build_cloud_two(number_buf, number_amount);
+ 	free(number_buf);
+
+ 	cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
  	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
 
  	float buffer[200];
- 	double eps = 0.6;
- 	int minCl = 30;
- 	
  	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
 
 	//Send back boxes of found clusters to master
-	int root = 0;
 	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-	MPI_Send(&buffer, bsize  , MPI_FLOAT, root, 0, MPI_COMM_WORLD);// Used with euclidian 
+	MPI_Send(&buffer, bsize  , MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian 
 }
 //******************************************************************************************************
 // End MPI

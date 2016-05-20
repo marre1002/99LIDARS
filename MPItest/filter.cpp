@@ -7,33 +7,51 @@ Filters::Filters()
 	// Empty constructor
 }
 
-int Filters::read_file(std::string infile, int nth_point)
+int Filters::read_file(std::string infile, int nth_point,  bool txt)
 {
+	int i = 0;
 
-	cloud.clear();
+	if(!txt)
+	{ // FILE IS BIN
+		cloud.clear();
 
-	// load point cloud
-	fstream input(infile.c_str(), ios::in | ios::binary);
-	if(!input.good()){
-		std::cerr << "Could not read file: " << infile << "\n";
-		exit(EXIT_FAILURE);
+		// load point cloud
+		fstream input(infile.c_str(), ios::in | ios::binary);
+		if(!input.good()){
+			std::cerr << "Could not read file: " << infile << "\n";
+			exit(EXIT_FAILURE);
+		}
+		input.seekg(0, ios::beg);
+
+		float ignore;
+		for (i=0; input.good() && !input.eof(); i++) {
+			pcl::PointXYZ point;
+			input.read((char *) &point.x, 3*sizeof(float));
+			input.read((char *) &ignore, sizeof(float));
+			if(i%nth_point == 0)cloud.push_back(point);
+		}
+		input.close();
+
+	}else{	// File is txt
+		
+		FILE* f = fopen(infile.c_str(), "r");
+		if (NULL == f) {
+		   cerr << "Could not read file: " << infile << endl;
+		   return 0;
+		}
+		
+		float intensity;
+		pcl::PointXYZ p;
+		while(fscanf(f,"%f %f %f %f\n", &p.x, &p.y, &p.z, &intensity) == 4) {
+			if(i%nth_point == 0) cloud.push_back(p);
+				i++;
+		}
+		fclose(f);
+
 	}
-	input.seekg(0, ios::beg);
-
-	float ignore;
-	int i;
-	for (i=0; input.good() && !input.eof(); i++) {
-		pcl::PointXYZ point;
-		input.read((char *) &point.x, 3*sizeof(float));
-		input.read((char *) &ignore, sizeof(float));
-		if(i%nth_point == 0)cloud.push_back(point);
-	}
-	input.close();
 
 	float percent = ((float)(i/nth_point))/i;
-
-	//std::cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ")\n";
-
+	std::cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ")\n";
 	
 	return 0;		
 }

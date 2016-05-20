@@ -24,6 +24,22 @@ int Segmentation::build_cloud(float *f, int size)
 
 	return(0);
 }
+int Segmentation::build_cloud_two(float* fs, int size){
+
+	cloud.clear();
+
+	for(int i=0; i < size; i++) {
+		if(i%3 == 0)
+		{
+			pcl::PointXYZ point;
+			point.x = fs[i];
+			point.y = fs[i+1];
+			point.z = fs[i+2];
+			cloud.push_back(point);
+		}
+	}
+}
+
 int Segmentation::ransac(double threshold, int iterations)
 {
 
