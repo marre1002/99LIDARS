@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
         //std::cout << argv[i] << " ";
 	}
 
-	//infile.append(file);
+	infile.append(file);
 
 	// MPI initializations
 	MPI_Status status;
@@ -206,12 +206,12 @@ int main(int argc, char **argv) {
 	pcl::console::TicToc tt;
 
 
-   /*float buff [80000]; 
+   float buff [80000]; 
    int count;
    MPI_Recv(&count, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
    MPI_Recv(&buff, count, MPI_FLOAT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  	*/
-   	MPI_Status status;
+
+   	/*MPI_Status status;
    	int number_amount;
 	MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 	MPI_Get_count(&status, MPI_FLOAT, &number_amount);
@@ -220,10 +220,11 @@ int main(int argc, char **argv) {
 	float* number_buf = (float*)malloc(sizeof(float) * number_amount);
 	// Now receive the message with the allocated buffer
 	MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+	*/
  	Segmentation seg;
- 	seg.build_cloud_two(number_buf, number_amount);
- 	free(number_buf);
+ 	seg.build_cloud(buff, count);
+ 	//seg.build_cloud_two(number_buf, number_amount);
+ 	//free(number_buf);
 
  	cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
  	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
@@ -233,7 +234,7 @@ int main(int argc, char **argv) {
 
 	//Send back boxes of found clusters to master
 	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-	MPI_Send(&buffer, bsize  , MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian 
+	MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian 
 }
 //******************************************************************************************************
 // End MPI
