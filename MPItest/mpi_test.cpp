@@ -147,6 +147,7 @@ int main(int argc, char **argv) {
 		//int sending = tt.toc(); 
 		os.str("");
 		infile = "../../Dataframes/";
+		zeros = "000000000";
 
 		//cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
