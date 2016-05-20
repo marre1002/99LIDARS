@@ -121,9 +121,9 @@ int main(int argc, char **argv) {
 	tt.tic(); // Distributing, processing, and cathering
 	for(int i = 2; i < numprocs; i++){ 
 	   int bsize = filt.floats.at(i).size();
-	   MPI_Send(&bsize, 1, MPI_INT, (i+1), 0, MPI_COMM_WORLD);
+	   MPI_Send(&bsize, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 	   float *f = &filt.floats.at(i)[0];
-	   MPI_Send(f, bsize, MPI_FLOAT, (i+1), 0, MPI_COMM_WORLD);
+	   MPI_Send(f, bsize, MPI_FLOAT, i, 0, MPI_COMM_WORLD);
 	}
 	int sending = tt.toc(); 
 
