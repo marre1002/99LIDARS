@@ -108,7 +108,6 @@ int main(int argc, char **argv) {
 	 	 zeros.append(os.str());
 	 	 zeros.append(bin);
 	 	 infile.append(zeros);
-	 	 os.str("");
 	 	 if(k > 9)
 	 	 	infile = infile.substr(1,infile.length());
 
@@ -146,6 +145,8 @@ int main(int argc, char **argv) {
 		   MPI_Send(f, bsize, MPI_FLOAT, (i+2), 0, MPI_COMM_WORLD);
 		}
 		//int sending = tt.toc(); 
+		os.str("");
+		infile = "../../Dataframes/";
 
 		//cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
