@@ -67,7 +67,8 @@ int main(int argc, char **argv) {
 	int minCl = 50;
 	
 	std::string infile = "../../Dataframes/";
-	std::string file = "0000000000.bin";
+	std::string bin = ".bin";
+	std::string zeros = "000000000"; // 9 zeros
 
 	for (int i = 1; i < argc; i++) { 
         if (i != argc) // Check that we haven't finished parsing already
@@ -86,7 +87,6 @@ int main(int argc, char **argv) {
         //std::cout << argv[i] << " ";
 	}
 
-	infile.append(file);
 
 	// MPI initializations
 	MPI_Status status;
@@ -100,39 +100,56 @@ int main(int argc, char **argv) {
 ********************************************************************************************/
 	if(my_rank == FILE_READ_PROCESS){ 
 
-	 int read_file;
-
-	 pcl::console::TicToc tt;
-	 tt.tic();	  
-
-	 // Read file and create 8 point clouds
-	 // Nth_point will be kept from the data e.g. 3, every third point will be used
 	 Filters filt;
-	 filt.read_file(infile, nth_point);
-	 filt.filter_and_slice();
+	 std::ostringstream os;
+	 for(int k = 0; k < num_files; k++){
+		 
+  		 os << k;
+	 	 zeros.append(os.str());
+	 	 zeros.append(bin);
+	 	 infile.append(zeros);
+	 	 if(k > 9)
+	 	 	infile = infile.substr(1,infile.length());
 
-	 read_file = tt.toc();
+	 	 if(k > 99)
+	 	 	infile = infile.substr(2,infile.length());
 
-	 // Sort the slices in decending order so the one with highest amount of points
-	 // gets processed first
-	 std::sort(filt.floats.begin(),filt.floats.end(),less_vectors);
-	
-	tt.tic(); // Distributing, processing, and cathering
-	for(int i = 0; i < SECTORS; i++){ 
-	   int bsize = filt.floats.at(i).size();
-	   MPI_Send(&bsize, 1, MPI_INT, (i+2), 0, MPI_COMM_WORLD);
-	   float *f = &filt.floats.at(i)[0];
-	   MPI_Send(f, bsize, MPI_FLOAT, (i+2), 0, MPI_COMM_WORLD);
+		 //int read_file;
+		 pcl::console::TicToc tt;
+		// tt.tic();	  
+
+		 // Read file and create 8 point clouds
+		 // Nth_point will be kept from the data e.g. 3, every third point will be used
+		 filt.read_file(infile, nth_point);
+		 filt.filter_and_slice();
+
+		 //read_file = tt.toc();
+
+		 // Sort the slices in decending order so the one with highest amount of points
+		 // gets processed first
+		 std::sort(filt.floats.begin(),filt.floats.end(),less_vectors);
+
+		if(k != 0)// WAIT FOR ACK FROM MERGER TO START AGAIN, WILL BLOCK HERE!
+		{
+			bool nextfile;	
+			MPI_Recv(&nextfile, 1, MPI_INT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			cout << " in " << tt.toc() << " ms"<< endl;
+			os << "";
+		}
+		
+		
+		tt.tic(); // Distributing, processing, and cathering
+		for(int i = 0; i < SECTORS; i++){ 
+		   int bsize = filt.floats.at(i).size();
+		   MPI_Send(&bsize, 1, MPI_INT, (i+2), 0, MPI_COMM_WORLD);
+		   float *f = &filt.floats.at(i)[0];
+		   MPI_Send(f, bsize, MPI_FLOAT, (i+2), 0, MPI_COMM_WORLD);
+		}
+		//int sending = tt.toc(); 
+
+		//cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
+		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	}
-	int sending = tt.toc(); 
-
-	// WAIT FOR ACK FROM MERGER TO START AGAIN
-	
-	int processing = tt.toc();
-	cout << "Read: " << filt.cloud.size() << " from " << infile << " (nth: " << nth_point <<")" << endl; 
-	cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
-	cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
-	cout << "===  = ==   === ==  ===  == ==   ==  ===   ===   ===" <<  endl;
 
 
 /********************************************************************************************************
@@ -140,59 +157,66 @@ int main(int argc, char **argv) {
 ********************************************************************************************************/
 }else if(my_rank == RECEIVER_PROCESS){
 	
-	//Dedicated object vector for box collection.
-	 std::vector<object> objects; 
+	std::vector<object> objects; 
 
-	int clusterCount = 0;
-	for(int i = 0; i < SECTORS ; i++){ 
-		int number_amount;
-		MPI_Status status;
-		MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-		MPI_Get_count(&status, MPI_FLOAT, &number_amount);
+	for(int k = 0; k < num_files; k++){
 
-		// Allocate a buffer to hold the incoming numbers
-		float* number_buf = (float*)malloc(sizeof(float) * number_amount);
-		// Now receive the message with the allocated buffer
-		MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		int clusterCount = 0;
+		for(int i = 0; i < SECTORS ; i++){ 
+			int number_amount;
+			MPI_Status status;
+			MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+			MPI_Get_count(&status, MPI_FLOAT, &number_amount);
 
-		// Loop through all received numbers from this sector and create object representations
-		for(int j = 0; j < number_amount; j++){
-			object c;
-			if(j % 6 == 0){
-				c.minPt = pcl::PointXYZ(number_buf[j], number_buf[j+1], number_buf[j+2]);
-				c.maxPt = pcl::PointXYZ(number_buf[j+3], number_buf[j+4], number_buf[j+5]);
-				objects.push_back(c);
+			// Allocate a buffer to hold the incoming numbers
+			float* number_buf = (float*)malloc(sizeof(float) * number_amount);
+			// Now receive the message with the allocated buffer
+			MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+			// Loop through all received numbers from this sector and create object representations
+			for(int j = 0; j < number_amount; j++){
+				object c;
+				if(j % 6 == 0){
+					c.minPt = pcl::PointXYZ(number_buf[j], number_buf[j+1], number_buf[j+2]);
+					c.maxPt = pcl::PointXYZ(number_buf[j+3], number_buf[j+4], number_buf[j+5]);
+					objects.push_back(c);
+				}
 			}
-		}
 
-		clusterCount = clusterCount + (number_amount/6);
-		free(number_buf);	
-  	}
+			clusterCount = clusterCount + (number_amount/6);
+			free(number_buf);	
+	  	}
 
-  	//Initiate merging
-  	for (int i = 0; i < objects.size(); ++i)
-  	{	
-		object a = objects.at(i);
-		for (int ii = i; ii < objects.size(); ++ii)
-		{	
-			object b = objects.at(ii);
-			if(DoObjectsIntersect(a,b) && i != ii){
-
-				object merge = MergeObjects(a,b);
-				objects.at(ii) = merge;
-				objects.at(i).remove = true;
-			}
-  		}
-  	}
-
-  	//Count number of merged objects.
-  	int clusters = 0;
+	  	//Initiate merging
 	  	for (int i = 0; i < objects.size(); ++i)
-  			if(!objects.at(i).remove) clusters++;
+	  	{	
+			object a = objects.at(i);
+			for (int ii = i; ii < objects.size(); ++ii)
+			{	
+				object b = objects.at(ii);
+				if(DoObjectsIntersect(a,b) && i != ii){
 
-  	cout << "Collector node received " << clusters << endl;
+					object merge = MergeObjects(a,b);
+					objects.at(ii) = merge;
+					objects.at(i).remove = true;
+				}
+	  		}
+	  	}
 
-  	// TELL FILE_READER THAT WE'RE DONE
+	  	//Count number of merged objects.
+	  	int clusters = 0;
+		  	for (int i = 0; i < objects.size(); ++i)
+	  			if(!objects.at(i).remove) clusters++;
+
+	  	cout << "Found: " << clusters;
+
+	  	objects.clear();
+
+	  	// TELL FILE_READER THAT WE'RE DONE
+	  	bool nextfile = true;
+	  	MPI_Send(&nextfile, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD);
+
+	}
 
 
 /********************************************************************************************************
@@ -200,38 +224,31 @@ int main(int argc, char **argv) {
 ********************************************************************************************************/
 }else if(my_rank > 1){ 
 
-	pcl::console::TicToc tt;
+	for(int k = 0; k < num_files; k++){
+
+		pcl::console::TicToc tt;
 
 
-   float buff [80000]; 
-   int count;
-   MPI_Recv(&count, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-   MPI_Recv(&buff, count, MPI_FLOAT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	   float buff [80000]; 
+	   int count;
+	   MPI_Recv(&count, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	   MPI_Recv(&buff, count, MPI_FLOAT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-   	/*MPI_Status status;
-   	int number_amount;
-	MPI_Probe(MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-	MPI_Get_count(&status, MPI_FLOAT, &number_amount);
+	 	Segmentation seg;
+	 	seg.build_cloud(buff, count);
+	 	//seg.build_cloud_two(number_buf, number_amount);
+	 	//free(number_buf);
 
-	// Allocate a buffer to hold the incoming numbers
-	float* number_buf = (float*)malloc(sizeof(float) * number_amount);
-	// Now receive the message with the allocated buffer
-	MPI_Recv(number_buf, number_amount, MPI_FLOAT, status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	*/
- 	Segmentation seg;
- 	seg.build_cloud(buff, count);
- 	//seg.build_cloud_two(number_buf, number_amount);
- 	//free(number_buf);
+	 	//cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
+	 	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
 
- 	cout << "Manage to build cloud! " << seg.cloud.size() << " points." << endl;
- 	seg.ransac(0.25, 100); // double Threshhold, int max_number_of_iterations
+	 	float buffer[200];
+	 	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
 
- 	float buffer[200];
- 	int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
-
-	//Send back boxes of found clusters to master
-	//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
-	MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian 
+		//Send back boxes of found clusters to master
+		//MPI_Send(&buffer, bsize, MPI_FLOAT, root, 0, MPI_COMM_WORLD); // used with db scan
+		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian 
+	}
 }
 //******************************************************************************************************
 // End MPI

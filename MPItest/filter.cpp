@@ -30,8 +30,8 @@ int Filters::read_file(std::string infile, int nth_point)
 	input.close();
 
 
-	float percent = ((float)(i/nth_point))/i;
-	std::cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ")\n";
+	//float percent = ((float)(i/nth_point))/i;
+	//std::cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ")\n";
 	
 	return 0;		
 }
