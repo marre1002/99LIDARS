@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
 	MPI_Init (&argc, &argv);
 	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
 	MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
+	pcl::console::TicToc tt;
 
 	
 /*******************************************************************************************
@@ -100,6 +101,8 @@ int main(int argc, char **argv) {
 ********************************************************************************************/
 	if(my_rank == FILE_READ_PROCESS){ 
 
+	tt.tic();
+	 
 	 Filters filt;
 	 std::ostringstream os;
 	 for(int k = 0; k < num_files; k++){
@@ -115,7 +118,6 @@ int main(int argc, char **argv) {
 	 	 	infile = infile.substr(2,infile.length());
 
 		 //int read_file;
-		 pcl::console::TicToc tt;
 		// tt.tic();	  
 
 		 // Read file and create 8 point clouds
@@ -133,11 +135,9 @@ int main(int argc, char **argv) {
 		{
 			bool nextfile;	
 			MPI_Recv(&nextfile, 1, MPI_INT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			cout << " in " << tt.toc() << " ms"<< endl;
 		}
 		
 		
-		tt.tic(); // Distributing, processing, and cathering
 		for(int i = 0; i < SECTORS; i++){ 
 		   int bsize = filt.floats.at(i).size();
 		   MPI_Send(&bsize, 1, MPI_INT, (i+2), 0, MPI_COMM_WORLD);
@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
 		//cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	}
+	cout << " in " << tt.toc() << " ms"<< endl;
 
 
 /********************************************************************************************************
@@ -163,6 +164,7 @@ int main(int argc, char **argv) {
 
 	for(int k = 0; k < num_files; k++){
 
+		tt.tic();
 		int clusterCount = 0;
 		for(int i = 0; i < SECTORS ; i++){ 
 			int number_amount;
@@ -210,13 +212,12 @@ int main(int argc, char **argv) {
 		  	for (int i = 0; i < objects.size(); ++i)
 	  			if(!objects.at(i).remove) clusters++;
 
-	  	cout << "Found: " << clusters;
-
 	  	objects.clear();
 
 	  	// TELL FILE_READER THAT WE'RE DONE
 	  	bool nextfile = true;
 	  	MPI_Send(&nextfile, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD);
+	  	cout << "Found: " << clusters << " in " << tt.toc() << " ms"<< endl;
 
 	}
 
