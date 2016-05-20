@@ -47,7 +47,7 @@ namespace NWUClustering
 	int Clusters::read_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 	{
 
-		cout << "number of points, from cluster: " << cloud->points.size() << endl;
+		//cout << "number of points, from cluster: " << cloud->points.size() << endl;
 
 		int num_points = cloud->points.size();
 		int dims = 3;
