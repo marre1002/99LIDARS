@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 	 	 zeros.append(os.str());
 	 	 zeros.append(bin);
 	 	 infile.append(zeros);
-	 	 os << "";
+	 	 os.str("");
 	 	 if(k > 9)
 	 	 	infile = infile.substr(1,infile.length());
 
