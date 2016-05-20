@@ -110,12 +110,13 @@ int main(int argc, char **argv) {
   		 os << k;
 	 	 zeros.append(os.str());
 	 	 zeros.append(bin);
-	 	 infile.append(zeros);
 	 	 if(k > 9)
-	 	 	infile = infile.substr(1,infile.length());
+	 	 	zeros = zeros.substr(1,zeros.length());
 
 	 	 if(k > 99)
-	 	 	infile = infile.substr(2,infile.length());
+	 	 	infile = zeros.substr(2,zeros.length());
+
+	 	 infile.append(zeros);
 
 		 //int read_file;
 		// tt.tic();	  
