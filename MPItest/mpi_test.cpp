@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 	 	 	zeros = zeros.substr(1,zeros.length());
 
 	 	 if(k > 99)
-	 	 	infile = zeros.substr(2,zeros.length());
+	 	 	zeros = zeros.substr(2,zeros.length());
 
 	 	 infile.append(zeros);
 
