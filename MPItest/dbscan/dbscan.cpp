@@ -71,8 +71,8 @@ namespace NWUClustering
 				noise++;
 		}	
 		
-		cout << "Total points " << noise + sum_points << " pt_in_cls " << sum_points << " noise " << noise << endl;
-		cout << "Number of clusters: " << m_clusters.size() << endl;
+		//cout << "Total points " << noise + sum_points << " pt_in_cls " << sum_points << " noise " << noise << endl;
+		//cout << "Number of clusters: " << m_clusters.size() << endl;
 	}
 
 	int ClusteringAlgo::writeClusters_uf(float *buffer)
@@ -166,8 +166,8 @@ namespace NWUClustering
 		}
 
 
-		cout << "Total points " << noise + sum_points << " pt_in_cls " << sum_points << " noise " << noise << endl;
-		cout << "Number of clusters: " << count << endl;
+		//cout << "Total points " << noise + sum_points << " pt_in_cls " << sum_points << " noise " << noise << endl;
+		//cout << "Number of clusters: " << count << endl;
 
 		clusters.clear();
 
@@ -305,7 +305,7 @@ namespace NWUClustering
 		int v1, v2, size;
 		// merge the trees that have not been merged yet
 		double stop = omp_get_wtime() ;
-		cout << "Local computation took " << stop - start << " seconds." << endl;
+		//cout << "Local computation took " << stop - start << " seconds." << endl;
 
 		//allocate and initiate locks
     		omp_lock_t *nlocks;
@@ -405,7 +405,7 @@ namespace NWUClustering
 
 		stop = omp_get_wtime();
 		free(nlocks);
-		cout << "Merging took " << stop - start << " seconds."<< endl;
+		//cout << "Merging took " << stop - start << " seconds."<< endl;
 
 		for(tid = 0; tid < maxthreads; tid++)
 			merge[tid].clear();
@@ -501,8 +501,8 @@ namespace NWUClustering
 		}
 		
 	        double stop = omp_get_wtime();
-        	cout << "Local computation took " << stop - start << " seconds." << endl;
-		cout << "No merging stage in classical DBSCAN"<< endl;
+        	//cout << "Local computation took " << stop - start << " seconds." << endl;
+		//cout << "No merging stage in classical DBSCAN"<< endl;
 		ind = NULL;
 		ne.clear();
 		ne2.clear();
