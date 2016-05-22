@@ -306,8 +306,9 @@ int main (int argc, char** argv)
 
 			int num_threads = 4;
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
-			eps = 1.4; // Dbscan needs another default value
 
+			eps = 0.5;
+			minCl = 25;
 
 			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
 
@@ -467,8 +468,8 @@ int main (int argc, char** argv)
 	  	for (int i = 0; i < objects.size(); ++i)
   			if(!objects.at(i).remove) counts++;
 
-		//cout << tt.toc();
-		cout << counts;
+		cout << "time: " << tt.toc() << "\t";
+		cout << counts << endl;
 	  
   	}
 
