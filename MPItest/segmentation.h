@@ -38,7 +38,7 @@ public:
 	int   build_cloud_two(float* fs, int size);
 	int   ransac(double threshold, int iterations);
 	int   euclidian(float *f, double eps, int minCl);
-	int   dbscan(float *floats);
+	int   dbscan(float *floats, int eps, int minCl, int threads);
 
 public:
 	//Class point cloud

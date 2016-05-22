@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
 	int num_files = 1;
 	double eps = 0.5;
 	int minCl = 50;
+	int db_threads = 2;
 	
 	std::string infile = "../../Dataframes/";
 	std::string bin = ".bin";
@@ -74,13 +75,9 @@ int main(int argc, char **argv) {
         if (i != argc) // Check that we haven't finished parsing already
             if(std::strcmp(argv[i], "-d") == 0) {
                 dbscan = true;
+                sscanf(argv[i+1], "%i", &db_threads);
             } else if(std::strcmp(argv[i], "-n") == 0){
-					//nth_point = atoi(argv[i+1]);
 					sscanf(argv[i+1], "%i", &nth_point);
-			} else if(std::strcmp(argv[i], "-e") == 0){
-				eps = atof(argv[i+1]);
-			} else if(std::strcmp(argv[i], "-m") == 0){
-				minCl = atoi(argv[i+1]);  
 			}else if(std::strcmp(argv[i], "-i") == 0){
 				num_files = atoi(argv[i+1]);
         }
@@ -153,7 +150,7 @@ int main(int argc, char **argv) {
 		//cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	}
-	cout << " in " << tt.toc() << " ms"<< endl;
+	cout << "Total time:" << tt.toc() << " ms"<< endl;
 
 
 /********************************************************************************************************
@@ -218,7 +215,7 @@ int main(int argc, char **argv) {
 	  	// TELL FILE_READER THAT WE'RE DONE
 	  	bool nextfile = true;
 	  	MPI_Send(&nextfile, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD);
-	  	cout << "Found: " << clusters << " in " << tt.toc() << " ms"<< endl;
+	  	cout << "Found:" << clusters << " in " << tt.toc() << " ms"<< endl;
 
 	}
 
@@ -249,7 +246,8 @@ int main(int argc, char **argv) {
 	 	
 	 	float buffer[200];
 	 	if(dbscan){
-	 		int bsize = seg.dbscan(buffer); // Returns size of float buffer
+	 		minCl = 20;
+	 		int bsize = seg.dbscan(buffer,eps,minCl, 2); // Returns size of float buffer
 	 		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD); // used with db scan 
 	 	}else{
 	 		int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer

@@ -129,18 +129,13 @@ int Segmentation::euclidian(float *f, double eps, int minCl)
 	return nn; 	// Size of flaot buffer		
 }
 
-int Segmentation::dbscan(float *floats)
+int Segmentation::dbscan(float *floats, int eps, int minCl, int threads)
 {
 
-	int num_threads = 4;
-	int minPts = 30; // minimal amout of points in order to be considered a cluster
-	double eps = 1.0; // distance between points
-
-
-	omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
+	omp_set_num_threads(threads); // Use 4 threads for clustering on the odroid
 
 	NWUClustering::ClusteringAlgo dbs;
-	dbs.set_dbscan_params(eps, minPts);
+	dbs.set_dbscan_params(eps, minCl);
 
 	double start = omp_get_wtime();
 	//cout << "DBSCAN reading points.."<< endl;
