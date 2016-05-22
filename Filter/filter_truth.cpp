@@ -325,7 +325,7 @@ int main (int argc, char** argv)
 	 }
 	
 	cout << tt.toc() << "\t"; // time taken
-	cout << count;
+	cout << count << endl;
 	
 
   return (0);
