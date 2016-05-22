@@ -79,7 +79,7 @@ int main (int argc, char** argv)
   int minCl = 50;
 
   //std::string infile = "../../Dataframes_txt/";
-  std::string infile = "../../BinAndTxt/";
+  std::string infile = "../../Dataframes/";
   std::string file = "0000000000.bin";
 
   // --------------------------------------
@@ -308,7 +308,7 @@ int main (int argc, char** argv)
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
 
 			eps = 0.5;
-			minCl = 25;
+			minCl = 20;
 
 			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
 
@@ -468,7 +468,7 @@ int main (int argc, char** argv)
 	  	for (int i = 0; i < objects.size(); ++i)
   			if(!objects.at(i).remove) counts++;
 
-		cout << "time: " << tt.toc() << "\t";
+		cout << tt.toc() << "\t";
 		cout << counts << endl;
 	  
   	}

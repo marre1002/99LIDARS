@@ -81,7 +81,7 @@ int main (int argc, char** argv)
 
   std::vector<object> objects;
 
-  std::string infile = "../../Dataframes_txt/";
+  std::string infile = "../../Dataframes/";
   std::string file = "default";
 
   // --------------------------------------
@@ -140,12 +140,10 @@ int main (int argc, char** argv)
 
 		input.seekg(0, ios::beg);
 
-		float ignore;
 		int i;
 		for (i=0; input.good() && !input.eof(); i++) {
 			pcl::PointXYZ point;
 			input.read((char *) &point.x, 3*sizeof(float));
-			input.read((char *) &ignore, sizeof(float));
 			if(i%nth_point == 0)cloud->points.push_back(point);
 		}
 		input.close();
@@ -248,8 +246,8 @@ int main (int argc, char** argv)
 
 			int num_threads = 4;
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
-			eps = 1.4; // Dbscan needs another default value
-
+			eps = 0.5; // Dbscan needs another default value
+			minCl = 20;
 
 			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
 
@@ -325,8 +323,10 @@ int main (int argc, char** argv)
 	  		object obj = objects.at(i);
 	  			if(!obj.remove) count++;
 	 }
-	//cout << count;
-	cout << tt.toc(); // time taken
+	
+	cout << tt.toc() << "\t"; // time taken
+	cout << count;
+	
 
   return (0);
 }
