@@ -77,13 +77,17 @@ int main(int argc, char **argv) {
                 dbscan = true;
                 sscanf(argv[i+1], "%i", &db_threads);
             } else if(std::strcmp(argv[i], "-n") == 0){
-					sscanf(argv[i+1], "%i", &nth_point);
+				sscanf(argv[i+1], "%i", &nth_point);
 			}else if(std::strcmp(argv[i], "-i") == 0){
 				num_files = atoi(argv[i+1]);
         }
         //std::cout << argv[i] << " ";
 	}
 
+	if(dbscan)
+		cout << "(" << nth_point << ") "<< "Running " << num_files << " with Dbscan and " << db_threads << "threads." << endl; 
+	else
+		cout << "(" << nth_point << ") "<< "Running " << num_files << " with Euclidian." << endl;
 
 	// MPI initializations
 	MPI_Status status;
@@ -91,7 +95,6 @@ int main(int argc, char **argv) {
 	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
 	MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
 	pcl::console::TicToc tt;
-
 	
 /*******************************************************************************************
 *		Master runs this code
@@ -245,12 +248,13 @@ int main(int argc, char **argv) {
 
 	 	
 	 	float buffer[200];
+	 	int bsize;
 	 	if(dbscan){
 	 		minCl = 20;
-	 		int bsize = seg.dbscan(buffer,eps,minCl, 2); // Returns size of float buffer
+	 		bsize = seg.dbscan(buffer,eps,minCl, db_threads); // Returns size of float buffer
 	 		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD); // used with db scan 
 	 	}else{
-	 		int bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
+	 		bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer
 	 		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD);// Used with euclidian
 	 	}
 	}

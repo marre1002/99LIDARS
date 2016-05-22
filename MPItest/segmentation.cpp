@@ -129,7 +129,7 @@ int Segmentation::euclidian(float *f, double eps, int minCl)
 	return nn; 	// Size of flaot buffer		
 }
 
-int Segmentation::dbscan(float *floats, int eps, int minCl, int threads)
+int Segmentation::dbscan(float *floats, double eps, int minCl, int threads)
 {
 
 	omp_set_num_threads(threads); // Use 4 threads for clustering on the odroid
@@ -137,18 +137,18 @@ int Segmentation::dbscan(float *floats, int eps, int minCl, int threads)
 	NWUClustering::ClusteringAlgo dbs;
 	dbs.set_dbscan_params(eps, minCl);
 
-	double start = omp_get_wtime();
+	//double start = omp_get_wtime();
 	//cout << "DBSCAN reading points.."<< endl;
 	dbs.read_cloud(cloud_filtered);	
 
 	//cout << "Reading input data file took " << omp_get_wtime() - start << " seconds." << endl;
 
 	// build kdtree for the points
-	start = omp_get_wtime();
+	//start = omp_get_wtime();
 	dbs.build_kdtree();
 	//cout << "Build kdtree took " float c_buff [200];<< omp_get_wtime() - start << " seconds." << endl;
 
-	start = omp_get_wtime();
+	//start = omp_get_wtime();
 	//run_dbscan_algo(dbs);
 	run_dbscan_algo_uf(dbs);
 	//cout << "DBSCAN (total) took " << omp_get_wtime() - start << " seconds." << endl;
