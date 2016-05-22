@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
 	  	// TELL FILE_READER THAT WE'RE DONE
 	  	bool nextfile = true;
 	  	MPI_Send(&nextfile, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD);
-	  	cout << "Found:" << clusters << " in " << tt.toc() << " ms"<< endl;
+	  	cout << clusters << "\t" << tt.toc() << endl;
 
 	}
 
