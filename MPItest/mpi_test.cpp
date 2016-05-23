@@ -62,6 +62,7 @@ int main(int argc, char **argv) {
 	int my_rank = 0;
 
 	bool dbscan = false;
+	bool sending_time = false;
 	bool full_output = false;
 	int nth_point = 4; // five is default
 	int num_files = 1;
@@ -84,6 +85,8 @@ int main(int argc, char **argv) {
 				num_files = atoi(argv[i+1]);
 			}else if(std::strcmp(argv[i], "-o") == 0){
 				full_output = true;
+			}else if(std::strcmp(argv[i], "-s") == 0){
+				sending_time = true;
         }
         //std::cout << argv[i] << " ";
 	}
@@ -110,7 +113,7 @@ int main(int argc, char **argv) {
 	pcl::console::TicToc total;
 	total.tic(); 
 	
-	 long sum; 
+	 int sum; 
 	 Filters filt;
 	 std::ostringstream os;
 	 for(int k = 0; k < num_files; k++){
@@ -154,7 +157,9 @@ int main(int argc, char **argv) {
 		   float *f = &filt.floats.at(i)[0];
 		   MPI_Send(f, bsize, MPI_FLOAT, (i+2), 0, MPI_COMM_WORLD);
 		}
-		sum = sum + tt.toc();
+		int ms = tt.toc();
+		if(sending_time) cout << ms;
+		sum = sum + ms;
 
 		//int sending = tt.toc(); 
 		os.str("");
@@ -176,7 +181,7 @@ int main(int argc, char **argv) {
 }else if(my_rank == RECEIVER_PROCESS){
 	
 	std::vector<object> objects; 
-	long sum;
+	int sum;
 
 	for(int k = 0; k < num_files; k++){
 
