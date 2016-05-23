@@ -62,6 +62,7 @@ int main(int argc, char **argv) {
 	int my_rank = 0;
 
 	bool dbscan = false;
+	bool full_output = false;
 	int nth_point = 4; // five is default
 	int num_files = 1;
 	double eps = 0.5;
@@ -77,18 +78,15 @@ int main(int argc, char **argv) {
             if(std::strcmp(argv[i], "-d") == 0) {
                 dbscan = true;
                 sscanf(argv[i+1], "%i", &db_threads);
-            } else if(std::strcmp(argv[i], "-n") == 0){
+            }else if(std::strcmp(argv[i], "-n") == 0){
 				sscanf(argv[i+1], "%i", &nth_point);
 			}else if(std::strcmp(argv[i], "-i") == 0){
 				num_files = atoi(argv[i+1]);
+			}else if(std::strcmp(argv[i], "-o") == 0){
+				full_output = true;
         }
         //std::cout << argv[i] << " ";
 	}
-
-	if(dbscan)
-		cout << "(" << nth_point << ") "<< "Running " << num_files << " with Dbscan and " << db_threads << "threads." << endl; 
-	else
-		cout << "(" << nth_point << ") "<< "Running " << num_files << " with Euclidian." << endl;
 
 	// MPI initializations
 	MPI_Status status;
@@ -101,6 +99,13 @@ int main(int argc, char **argv) {
 *		Master runs this code
 ********************************************************************************************/
 	if(my_rank == FILE_READ_PROCESS){ 
+
+    if(full_output){
+    	if(dbscan)
+			cout << "(" << nth_point << ") "<< "Running " << num_files << " with Dbscan and " << db_threads << " threads." << endl; 
+		else
+			cout << "(" << nth_point << ") "<< "Running " << num_files << " with Euclidian." << endl;
+	}
 
 	pcl::console::TicToc total;
 	total.tic(); 
@@ -160,7 +165,7 @@ int main(int argc, char **argv) {
 		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	}
 	
-	usleep(2000);
+	usleep(90000);
 	cout << "Total time:" << total.toc() << " ms."<< endl;
 	cout << "Average ds-loop:" << ((double)sum/(double)num_files) << " ms."<< endl;
 
@@ -229,7 +234,7 @@ int main(int argc, char **argv) {
 	  	bool nextfile = true;
 	  	MPI_Send(&nextfile, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD);
 	  	int ms = tt.toc();
-	  	cout << clusters << "\t" << ms << endl;
+	  	if(full_output) cout << clusters << "\t" << ms << endl;
 	  	sum = sum + ms;
 	}
 		cout << "Average process time: " << ((double)sum)/((double)num_files) << " ms." << endl;
