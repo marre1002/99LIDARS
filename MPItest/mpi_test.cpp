@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <unistd.h>
 #include <mpi.h>
 #include <algorithm>    // std::sort
 
@@ -101,8 +102,10 @@ int main(int argc, char **argv) {
 ********************************************************************************************/
 	if(my_rank == FILE_READ_PROCESS){ 
 
-	tt.tic();
-	 
+	pcl::console::TicToc total;
+	total.tic(); 
+	
+	 long sum; 
 	 Filters filt;
 	 std::ostringstream os;
 	 for(int k = 0; k < num_files; k++){
@@ -139,12 +142,15 @@ int main(int argc, char **argv) {
 		}
 		
 		
+		tt.tic();
 		for(int i = 0; i < SECTORS; i++){ 
 		   int bsize = filt.floats.at(i).size();
 		   MPI_Send(&bsize, 1, MPI_INT, (i+2), 0, MPI_COMM_WORLD);
 		   float *f = &filt.floats.at(i)[0];
 		   MPI_Send(f, bsize, MPI_FLOAT, (i+2), 0, MPI_COMM_WORLD);
 		}
+		sum = sum + tt.toc();
+
 		//int sending = tt.toc(); 
 		os.str("");
 		infile = "../../Dataframes/";
@@ -153,7 +159,10 @@ int main(int argc, char **argv) {
 		//cout << "Read file and filter:\t\t" << read_file << " ms" << endl;
 		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	}
-	cout << "Total time:" << tt.toc() << " ms"<< endl;
+	
+	usleep(2000);
+	cout << "Total time:" << total.toc() << " ms."<< endl;
+	cout << "Average ds-loop:" << ((double)sum/(double)num_files) << " ms."<< endl;
 
 
 /********************************************************************************************************
@@ -162,6 +171,7 @@ int main(int argc, char **argv) {
 }else if(my_rank == RECEIVER_PROCESS){
 	
 	std::vector<object> objects; 
+	long sum;
 
 	for(int k = 0; k < num_files; k++){
 
@@ -218,9 +228,11 @@ int main(int argc, char **argv) {
 	  	// TELL FILE_READER THAT WE'RE DONE
 	  	bool nextfile = true;
 	  	MPI_Send(&nextfile, 1, MPI_INT, FILE_READ_PROCESS, 0, MPI_COMM_WORLD);
-	  	cout << clusters << "\t" << tt.toc() << endl;
-
+	  	int ms = tt.toc();
+	  	cout << clusters << "\t" << ms << endl;
+	  	sum = sum + ms;
 	}
+		cout << "Average process time: " << ((double)sum)/((double)num_files) << " ms." << endl;
 
 
 /********************************************************************************************************

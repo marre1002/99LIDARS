@@ -150,7 +150,7 @@ int main (int argc, char** argv)
 
 		float percent = ((float)(i/nth_point))/i;
 
-		//cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
+		cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
 	}else{
 		//  READ TXT INSTEAD OF BIN =======================================================================================
 		FILE* f = fopen(infile.c_str(), "r");
@@ -205,6 +205,7 @@ int main (int argc, char** argv)
 
 	  // END OF RANSAC
 	  
+	  cout << "Points after RANSAC: " << cloud_filtered->points.size() << endl; 
 	  int db_numberOfClusters = 0;
 	  if(!dbscan){
 		  // Creating the KdTree object for the search method of the extraction
@@ -230,6 +231,7 @@ int main (int argc, char** argv)
 		      cloud_cluster->height = 1;
 		      cloud_cluster->is_dense = true;
 		    
+
 		    
 		    object obj;
 		    obj.remove = false;
@@ -238,6 +240,7 @@ int main (int argc, char** argv)
 
 	 	
 	 		j++;
+	 		cout << "cluster size: " << cloud_cluster->points.size() << endl;
 		    cloud_cluster->points.clear();
 		  }
 

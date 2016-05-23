@@ -399,8 +399,8 @@ int main (int argc, char** argv)
 	  viewer->initCameraParameters ();
 
 	  double  pos_x = 0;
-	  double  pos_y = -10; // -13
-	  double  pos_z = 19; // 10
+	  double  pos_y = -19; // -13
+	  double  pos_z = 14; // 10
 	  double  up_x = 0;
 	  double  up_y = 1;
 	  double  up_z = 1;
@@ -411,7 +411,7 @@ int main (int argc, char** argv)
 	  int counts = 0;
 	  
 		/* ====== PRINTING ALL THE BOXES ========================== */
-
+	  	/*
   		for (int i = 0; i < objv.size(); ++i)
 			{
 	  		object obj = objv.at(i);
@@ -442,7 +442,7 @@ int main (int argc, char** argv)
   		    	}
 	  	}
 	  	cout << counts << endl;
-
+		*/
 	  if(lines){
 	  	int z = -1.9;
 	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,0,z),0.0f,8.0f,0.0f, "aline");
