@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
 	
 	usleep(90000);
 	cout << "Total time:" << total.toc() << " ms."<< endl;
-	cout << "Average ds-loop:" << ((double)sum/(double)num_files) << " ms."<< endl;
+	cout << "Average ds-loop:" << ((double)sum)/((double)num_files) << " ms."<< endl;
 
 
 /********************************************************************************************************
