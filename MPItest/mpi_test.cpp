@@ -96,7 +96,6 @@ int main(int argc, char **argv) {
 	MPI_Init (&argc, &argv);
 	MPI_Comm_size (MPI_COMM_WORLD, &numprocs);
 	MPI_Comm_rank (MPI_COMM_WORLD, &my_rank);
-	pcl::console::TicToc tt;
 	
 /*******************************************************************************************
 *		Master runs this code
@@ -110,7 +109,7 @@ int main(int argc, char **argv) {
 			cout << "(" << nth_point << ") "<< "Running " << num_files << " with Euclidian." << endl;
 	}
 
-	pcl::console::TicToc total;
+	pcl::console::TicToc total, tt;
 	total.tic(); 
 	
 	 int sum; 
@@ -158,7 +157,7 @@ int main(int argc, char **argv) {
 		   MPI_Send(f, bsize, MPI_FLOAT, (i+2), 0, MPI_COMM_WORLD);
 		}
 		int ms = tt.toc();
-		if(sending_time) cout << ms;
+		if(sending_time) cout << ms << endl;
 		sum = sum + ms;
 
 		//int sending = tt.toc(); 
@@ -180,6 +179,7 @@ int main(int argc, char **argv) {
 ********************************************************************************************************/
 }else if(my_rank == RECEIVER_PROCESS){
 	
+	pcl::console::TicToc tt;
 	std::vector<object> objects; 
 	int sum;
 
