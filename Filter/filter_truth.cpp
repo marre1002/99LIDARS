@@ -151,7 +151,7 @@ int main (int argc, char** argv)
 
 		float percent = ((float)(i/nth_point))/i;
 
-		cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
+		//cout << "File have " << i << " points, " << "after filtering: " << (i/nth_point) << "  (" << percent << ") "<< endl;
 	}else{
 		//  READ TXT INSTEAD OF BIN =======================================================================================
 		FILE* f = fopen(infile.c_str(), "r");
@@ -206,9 +206,10 @@ int main (int argc, char** argv)
 
 	  // END OF RANSAC
 	  
-	  cout << "Points after RANSAC: " << cloud_filtered->points.size() << endl; 
+	  //cout << "Points after RANSAC: " << cloud_filtered->points.size() << endl; 
 	  int db_numberOfClusters = 0;
 	  if(!dbscan){
+	  	  cout << "euclid 1 thread" << endl;
 		  // Creating the KdTree object for the search method of the extraction
 		  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 		  tree->setInputCloud (cloud_filtered);
@@ -241,7 +242,7 @@ int main (int argc, char** argv)
 
 	 	
 	 		j++;
-	 		cout << "cluster size: " << cloud_cluster->points.size() << endl;
+	 		//cout << "cluster size: " << cloud_cluster->points.size() << endl;
 		    cloud_cluster->points.clear();
 		  }
 
@@ -328,8 +329,8 @@ int main (int argc, char** argv)
 	  			if(!obj.remove) count++;
 	 }
 	
-	cout << tt.toc() << "\t"; // time taken
-	cout << count << endl;
+	cout << tt.toc() << endl; // time taken
+	//cout << count << endl;
 	
 
   return (0);
