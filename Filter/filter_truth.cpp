@@ -75,6 +75,7 @@ int main (int argc, char** argv)
   bool lines = false;
   bool dbscan = false;
   bool read_binary = true;
+  int threadss = 4;
   int nth_point = 5; // five is default
   double eps = 0.5; // epsilon for clustering default 0.6 for the
   int minCl = 50;
@@ -107,7 +108,7 @@ int main (int argc, char** argv)
 				} else if(std::strcmp(argv[i], "-i") == 0){
 					file.assign(argv[i+1]);
 				} else if(std::strcmp(argv[i], "-t") == 0){
-					read_binary = false;
+					threadss = atoi(argv[i+1]);
 				} else if(std::strcmp(argv[i], "-x") == 0){
 					merge = true;
 				}                                    
@@ -247,12 +248,12 @@ int main (int argc, char** argv)
 		  
 		}else{ // DBSCAN CODE
 
-			int num_threads = 4;
+			cout << "DBSCAN num threads " << threadss << endl;
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
 			eps = 0.5; // Dbscan needs another default value
 			minCl = 20;
 
-			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
+			omp_set_num_threads(threadss); // Use 4 threads for clustering on the odroid
 
 			NWUClustering::ClusteringAlgo dbs;
 			dbs.set_dbscan_params(eps, minCl);
