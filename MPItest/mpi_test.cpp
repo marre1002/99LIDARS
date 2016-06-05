@@ -66,8 +66,14 @@ int main(int argc, char **argv) {
 	bool full_output = false;
 	int nth_point = 4; // five is default
 	int num_files = 1;
-	double eps = 0.5;
-	int minCl = 50;
+	//double eps = 0.5;
+	//int minCl = 50;
+	double eps = 0.75; // 25% values
+	int minCl = 13;	// 25% values
+
+	double db_eps = 0.55; // 25% values
+	int db_minCl = 9;	// 25% values
+
 	int db_threads = 2;
 	
 	std::string infile = "../../Dataframes/";
@@ -169,9 +175,9 @@ int main(int argc, char **argv) {
 		//cout << "Sending data-loop:\t\t" << sending << " ms" << endl;
 	}
 	
-	usleep(90000);
-	cout << "Total time:" << total.toc() << " ms."<< endl;
-	cout << "Average ds-loop:" << ((double)sum)/((double)num_files) << " ms."<< endl;
+	//usleep(90000);
+	//cout << "Total time:" << total.toc() << " ms."<< endl;
+	//cout << "Average ds-loop:" << ((double)sum)/((double)num_files) << " ms."<< endl;
 
 
 /********************************************************************************************************
@@ -273,7 +279,7 @@ int main(int argc, char **argv) {
 	 	int bsize;
 	 	if(dbscan){
 	 		minCl = 20;
-	 		bsize = seg.dbscan(buffer,eps,minCl, db_threads); // Returns size of float buffer
+	 		bsize = seg.dbscan(buffer,db_eps,db_minCl, db_threads); // Returns size of float buffer
 	 		MPI_Send(&buffer, bsize, MPI_FLOAT, RECEIVER_PROCESS, 0, MPI_COMM_WORLD); // used with db scan 
 	 	}else{
 	 		bsize = seg.euclidian(buffer, eps, minCl); // Returns size of float buffer

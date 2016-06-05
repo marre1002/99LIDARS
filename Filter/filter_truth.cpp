@@ -249,7 +249,7 @@ int main (int argc, char** argv)
 		  
 		}else{ // DBSCAN CODE
 
-			cout << "DBSCAN num threads " << threadss << endl;
+			//cout << "DBSCAN num threads " << threadss << endl;
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
 			//eps = 0.5; // Dbscan needs another default value
 			//minCl = 20;
@@ -329,7 +329,7 @@ int main (int argc, char** argv)
 	  			if(!obj.remove) count++;
 	 }
 	
-	cout << tt.toc() << "\t"; // time taken
+	//cout << tt.toc() << "\t"; // time taken
 	cout << count;
 	
 
