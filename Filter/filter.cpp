@@ -232,6 +232,7 @@ int main (int argc, char** argv)
   int ii = 0;
   std::vector<pcl::PointXYZ> cluster_vector;
 
+
   for(int ii = 0 ; ii < v.size(); ii++){
 
 	  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
@@ -305,10 +306,10 @@ int main (int argc, char** argv)
 		}else{ // DBSCAN CODE
 
 			int num_threads = 4;
+			//cout << "eps: " << eps << "  minCl: " << minCl << endl; 
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
+			//eps = 1.4; // Dbscan needs another default value
 
-			eps = 0.5;
-			minCl = 20;
 
 			omp_set_num_threads(num_threads); // Use 4 threads for clustering on the odroid
 
@@ -390,7 +391,7 @@ int main (int argc, char** argv)
   	  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
 	  viewer->setBackgroundColor (0, 0, 0);
 	  viewer->addPointCloud<pcl::PointXYZ> (cloud, "source");
-	  float intz = 0.6f;
+	  float intz = 0.5f;
 	  viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, intz, intz, intz, "source");
 	  //viewer->addPointCloud<pcl::PointXYZ> (cloud_main, "main");
 	  //viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_COLOR, 1.0f, 0.0f, 0.0f, "main");  
@@ -399,11 +400,11 @@ int main (int argc, char** argv)
 	  viewer->initCameraParameters ();
 
 	  double  pos_x = 0;
-	  double  pos_y = -19; // -13
-	  double  pos_z = 14; // 10
+	  double  pos_y = -60; // -13
+	  double  pos_z = 75; // 10
 	  double  up_x = 0;
-	  double  up_y = 1;
-	  double  up_z = 1;
+	  double  up_y = 0;
+	  double  up_z = 0;
 
 	  viewer->setCameraPosition(pos_x,pos_y,pos_z,up_x,up_y,up_z, 0); 		
 
@@ -411,8 +412,8 @@ int main (int argc, char** argv)
 	  int counts = 0;
 	  
 		/* ====== PRINTING ALL THE BOXES ========================== */
-	  	/*
-  		for (int i = 0; i < objv.size(); ++i)
+
+  		/*for (int i = 0; i < objv.size(); ++i)
 			{
 	  		object obj = objv.at(i);
   			ss << "id" << i << "t";
@@ -420,7 +421,7 @@ int main (int argc, char** argv)
 		    	
 		    	viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 0.0,0.0,0.7, str ,0);
 	    		ss.str("");
-  		}
+  		}*/
 
 	  	for (int i = 0; i < objects.size(); ++i)
 			{
@@ -431,9 +432,9 @@ int main (int argc, char** argv)
 	    			std::string str = ss.str();
 	  		    	pcl::PointXYZ middle;
 	  		    	if(obj.merged)
-  		    			viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,1.0,0.0, str ,0);
-  		    		else
   		    			viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,0.0,0.0, str ,0);
+  		    		else
+  		    			viewer->addCube(obj.minPt.x, obj.maxPt.x, obj.minPt.y, obj.maxPt.y, obj.minPt.z, obj.maxPt.z, 1.0,1.0,1.0, str ,0);
   		    		ss.str("");
     				ss << counts;
     				middle = pcl::PointXYZ(((obj.minPt.x+obj.maxPt.x)/2),((obj.minPt.y+obj.maxPt.y)/2),((obj.minPt.z+obj.maxPt.z)/2));
@@ -442,7 +443,7 @@ int main (int argc, char** argv)
   		    	}
 	  	}
 	  	cout << counts << endl;
-		*/
+
 	  if(lines){
 	  	int z = -1.9;
 	  	viewer->addLine<pcl::PointXYZ> (pcl::PointXYZ(0,0,z),pcl::PointXYZ(55,0,z),0.0f,8.0f,0.0f, "aline");
@@ -469,7 +470,7 @@ int main (int argc, char** argv)
   			if(!objects.at(i).remove) counts++;
 
 		cout << tt.toc() << "\t";
-		cout << counts << endl;
+		cout << counts;
 	  
   	}
 
