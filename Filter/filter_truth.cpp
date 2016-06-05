@@ -209,7 +209,7 @@ int main (int argc, char** argv)
 	  //cout << "Points after RANSAC: " << cloud_filtered->points.size() << endl; 
 	  int db_numberOfClusters = 0;
 	  if(!dbscan){
-	  	  cout << "euclid 1 thread" << endl;
+	  	  //cout << "euclid 1 thread" << endl;
 		  // Creating the KdTree object for the search method of the extraction
 		  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 		  tree->setInputCloud (cloud_filtered);
@@ -251,8 +251,8 @@ int main (int argc, char** argv)
 
 			cout << "DBSCAN num threads " << threadss << endl;
 			//int minPts = 30; // minimal amout of points in order to be considered a cluster
-			eps = 0.5; // Dbscan needs another default value
-			minCl = 20;
+			//eps = 0.5; // Dbscan needs another default value
+			//minCl = 20;
 
 			omp_set_num_threads(threadss); // Use 4 threads for clustering on the odroid
 
@@ -329,8 +329,8 @@ int main (int argc, char** argv)
 	  			if(!obj.remove) count++;
 	 }
 	
-	cout << tt.toc() << endl; // time taken
-	//cout << count << endl;
+	cout << tt.toc() << "\t"; // time taken
+	cout << count;
 	
 
   return (0);
